@@ -275,7 +275,7 @@ void ParticleManager::handleParticleEvent(ClientEvent *event, IGameDef *gamedef,
 {
 	switch (event->type) {
 		case CE_DELETE_PARTICLESPAWNER: {
-			MutexAutoLock lock(m_spawner_list_lock); // Should this be JMutex?
+			JMutexAutoLock lock(m_spawner_list_lock);
 
 			if (irrlicht_spawners.find(event->delete_particlespawner.id) !=
 					irrlicht_spawners.end()) {
