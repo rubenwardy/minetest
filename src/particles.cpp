@@ -158,7 +158,6 @@ public:
 
                         v3f acc = v3f(0.0, 0.0, 0.0);
 
-
                         //to ensure particles collide with correct position
                         v3f off = intToFloat(m_env->getCameraOffset(), BS);
 
@@ -221,6 +220,7 @@ private:
         irr::scene::ISceneManager* SceneManager;
 };
 
+<<<<<<< 998d7e7bdf9e9b71e47dcf7d62e0f4a46433d843
 Particle::Particle(
 	IGameDef *gamedef,
 	scene::ISceneManager* smgr,
@@ -553,6 +553,8 @@ void ParticleSpawner::step(float dtime, ClientEnvironment* env)
 }
 
 
+=======
+>>>>>>> wip irrlicht particle spawners
 ParticleManager::ParticleManager(ClientEnvironment* env) :
 	m_env(env)
 {}
@@ -564,10 +566,11 @@ ParticleManager::~ParticleManager()
 
 void ParticleManager::step(float dtime)
 {
-	stepParticles (dtime);
-	stepSpawners (dtime);
-}
+	return;
 
+	v3s16 offset = m_env->getCameraOffset();
+
+<<<<<<< 998d7e7bdf9e9b71e47dcf7d62e0f4a46433d843
 void ParticleManager::stepSpawners (float dtime)
 {
 	MutexAutoLock lock(m_spawner_list_lock);
@@ -605,34 +608,52 @@ void ParticleManager::stepParticles (float dtime)
 			(*i)->step(dtime);
 			++i;
 		}
+=======
+	JMutexAutoLock lock(m_spawner_list_lock);
+	for(std::list<s32>::iterator i =
+			particlespawners.begin();
+			i != particlespawners.end(); i++)
+	{
+		// TODO: get smgr to update position
+//		scene::ISceneNode *node = smgr->getSceneNodeFromId(id);
+//		v3f pos = node->getPosition();
+
+//		if(node)
+//			node->setPosition(pos * BS - intToFloat(offset, BS));
+>>>>>>> wip irrlicht particle spawners
 	}
+	return;
 }
 
 void ParticleManager::clearAll ()
 {
+<<<<<<< 998d7e7bdf9e9b71e47dcf7d62e0f4a46433d843
 	MutexAutoLock lock(m_spawner_list_lock);
 	MutexAutoLock lock2(m_particle_list_lock);
 	for(std::map<u32, ParticleSpawner*>::iterator i =
 			m_particle_spawners.begin();
 			i != m_particle_spawners.end();)
-	{
-		delete i->second;
-		m_particle_spawners.erase(i++);
-	}
+=======
+	return;
 
-	for(std::vector<Particle*>::iterator i =
-			m_particles.begin();
-			i != m_particles.end();)
+	JMutexAutoLock lock(m_spawner_list_lock);
+	for(std::list<s32>::iterator i =
+			particlespawners.begin();
+			i != particlespawners.end();)
+>>>>>>> wip irrlicht particle spawners
 	{
-		(*i)->remove();
-		delete *i;
-		i = m_particles.erase(i);
+		// TODO: get smgr for deletion
+//		scene::ISceneNode *node = smgr->getSceneNodeFromId(id);
+//		if(node) smgr->addToDeletionQueue(node);
+
+		particlespawners.erase(i++);
 	}
 }
 
 void ParticleManager::handleParticleEvent(ClientEvent *event, IGameDef *gamedef,
-		scene::ISceneManager* smgr, LocalPlayer *player)
+					  scene::ISceneManager* smgr, LocalPlayer *player)
 {
+<<<<<<< 998d7e7bdf9e9b71e47dcf7d62e0f4a46433d843
 	switch (event->type) {
 		case CE_DELETE_PARTICLESPAWNER: {
 			MutexAutoLock lock(m_spawner_list_lock);
@@ -643,6 +664,20 @@ void ParticleManager::handleParticleEvent(ClientEvent *event, IGameDef *gamedef,
 			}
 			// no allocated memory in delete event
 			break;
+=======
+	if (event->type == CE_DELETE_PARTICLESPAWNER) {
+		JMutexAutoLock lock(m_spawner_list_lock);
+		s32 id = event->delete_particlespawner.id;
+
+		std::list<s32>::iterator find = std::find(particlespawners.begin(), particlespawners.end(), id);
+		if (find != particlespawners.end())
+		{
+			scene::ISceneNode *node = smgr->getSceneNodeFromId(id);
+			if(node)
+				smgr->addToDeletionQueue(node);
+
+			particlespawners.erase(find);
+>>>>>>> wip irrlicht particle spawners
 		}
 		case CE_ADD_PARTICLESPAWNER: {
 			{
@@ -687,6 +722,7 @@ void ParticleManager::handleParticleEvent(ClientEvent *event, IGameDef *gamedef,
 			delete event->add_particlespawner.texture;
 			delete event->add_particlespawner.maxacc;
 
+<<<<<<< 998d7e7bdf9e9b71e47dcf7d62e0f4a46433d843
 			{
 				MutexAutoLock lock(m_spawner_list_lock);
 				m_particle_spawners.insert(
@@ -714,24 +750,113 @@ void ParticleManager::handleParticleEvent(ClientEvent *event, IGameDef *gamedef,
 					v2f(1.0, 1.0));
 
 			addParticle(toadd);
+=======
+		s32 id = event->add_particlespawner.id;
+		std::list<s32>::iterator find = std::find(particlespawners.begin(), particlespawners.end(), id);
+		if (find != particlespawners.end())
+		{
+			scene::ISceneNode *node = smgr->getSceneNodeFromId(id);
+			if(node)
+				smgr->addToDeletionQueue(node);
+
+			particlespawners.erase(find);
+		}
+
+		video::ITexture *texture =
+				gamedef->tsrc()->getTexture(*(event->add_particlespawner.texture));
+
+		scene::IParticleSystemSceneNode * ps = smgr->addParticleSystemSceneNode(false);
+
+		float pps = event->add_particlespawner.amount;
+		float time = event->add_particlespawner.spawntime;
+
+		if (time != 0)
+			pps = pps / time;
+
+		float minsize = event->add_particlespawner.minsize;
+		float maxsize = event->add_particlespawner.maxsize;
+
+		scene::IParticlePointEmitter * em = ps->createPointEmitter(
+					random_v3f(v3f(0,0,0), v3f(1, 1, 1))/10,
+					5,
+					20,
+					video::SColor(255.0, 255.0, 255.0, 255.0), //mincol,
+					video::SColor(255.0, 255.0, 255.0, 255.0), //maxcol,
+					event->add_particlespawner.minexptime*1000,
+					event->add_particlespawner.maxexptime*1000,
+					360, //maxdeg,
+					core::dimension2d<f32>(minsize, minsize),
+					core::dimension2d<f32>(maxsize, maxsize));
+
+
+		ps->setEmitter(em);
+		em->drop();
+
+		ps->setMaterialTexture(0, texture);
+
+		v3f pos = *event->add_particlespawner.minpos;
+		pos = pos*BS - intToFloat(m_env->getCameraOffset(), BS);
+		ps->setPosition(pos);
+
+		ps->setMaterialFlag(video::EMF_LIGHTING, false);
+		ps->setMaterialFlag(video::EMF_BACK_FACE_CULLING, false);
+		ps->setMaterialFlag(video::EMF_BILINEAR_FILTER, false);
+		ps->setMaterialFlag(video::EMF_FOG_ENABLE, true);
+		ps->setMaterialType(video::EMT_TRANSPARENT_ALPHA_CHANNEL);
+
+		if (time != 0) {
+
+			scene::ISceneNodeAnimator* foo =  smgr->createDeleteAnimator(time * 1000);
+			ps->addAnimator(foo);
+			foo->drop();
+		}
+
+		{
+			JMutexAutoLock lock(m_spawner_list_lock);
+			particlespawners.push_back(ps->getID());
+		}
+>>>>>>> wip irrlicht particle spawners
 
 			delete event->spawn_particle.pos;
 			delete event->spawn_particle.vel;
 			delete event->spawn_particle.acc;
 
+<<<<<<< 998d7e7bdf9e9b71e47dcf7d62e0f4a46433d843
 			break;
 		}
 		default: break;
+=======
+	if (event->type == CE_SPAWN_PARTICLE) {
+		//		video::ITexture *texture =
+		//			gamedef->tsrc()->getTexture(*(event->spawn_particle.texture));
+
+		//		Particle* toadd = new Particle(gamedef, smgr, player, m_env,
+		//				*event->spawn_particle.pos,
+		//				*event->spawn_particle.vel,
+		//				*event->spawn_particle.acc,
+		//				event->spawn_particle.expirationtime,
+		//				event->spawn_particle.size,
+		//				event->spawn_particle.collisiondetection,
+		//				event->spawn_particle.vertical,
+		//				texture,
+		//				v2f(0.0, 0.0),
+		//				v2f(1.0, 1.0));
+
+		//		addParticle(toadd);
+
+		//		delete event->spawn_particle.pos;
+		//		delete event->spawn_particle.vel;
+		//		delete event->spawn_particle.acc;
+
+		return;
+>>>>>>> wip irrlicht particle spawners
 	}
 }
 
 void ParticleManager::addDiggingParticles(IGameDef* gamedef, scene::ISceneManager* smgr,
 		LocalPlayer *player, v3s16 pos, const TileSpec tiles[])
 {
-//	for (u16 j = 0; j < 32; j++) // set the amount of particles here
-//	{
 		addNodeParticle(gamedef, smgr, player, pos, tiles, 32);
-//	}
 }
 
 void ParticleManager::addPunchingParticles(IGameDef* gamedef, scene::ISceneManager* smgr,
@@ -771,15 +896,12 @@ void ParticleManager::addNodeParticle(IGameDef* gamedef, scene::ISceneManager* s
 	ps->addAffector(paf);
 	paf->drop();
 
-//	scene::ISceneNodeAnimator* foo =  smgr->createDeleteAnimator(3000);
-//	ps->addAnimator(foo);
-//	foo->drop();
-
 	ps->setMaterialFlag(video::EMF_LIGHTING, false);
 	ps->setMaterialFlag(video::EMF_ZWRITE_ENABLE, true );
 	ps->setMaterialTexture(0, texture);
 }
 
+<<<<<<< 998d7e7bdf9e9b71e47dcf7d62e0f4a46433d843
 //void ParticleManager::addNodeParticle(IGameDef* gamedef, scene::ISceneManager* smgr,
 //		LocalPlayer *player, v3s16 pos, const TileSpec tiles[])
 //{
@@ -835,3 +957,5 @@ void ParticleManager::addParticle(Particle* toadd)
 	MutexAutoLock lock(m_particle_list_lock);
 	m_particles.push_back(toadd);
 }
+=======
+>>>>>>> wip irrlicht particle spawners
