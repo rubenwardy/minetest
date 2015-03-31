@@ -271,18 +271,24 @@ void ParticleManager::handleParticleEvent(ClientEvent *event, IGameDef *gamedef,
 
 	if (event->type == CE_DELETE_PARTICLESPAWNER) {
 		JMutexAutoLock lock(m_spawner_list_lock);
-		s32 id = event->delete_particlespawner.id;
 
-		std::list<s32>::iterator find = std::find(particlespawners.begin(), particlespawners.end(), id);
-		if (find != particlespawners.end())
+		if (irrlicht_spawners.find(event->delete_particlespawner.id) !=
+		    irrlicht_spawners.end())
 		{
 			scene::ISceneNode *node = smgr->getSceneNodeFromId(id);
 			if(node)
-				smgr->addToDeletionQueue(node);
-
-			particlespawners.erase(find);
+				m_smgr->addToDeletionQueue(node);
+			irrlicht_spawners.erase(irrlicht_spawners.find(event->delete_particlespawner.id));
 		}
-		case CE_ADD_PARTICLESPAWNER: {
+		return;
+	}
+
+	if (event->type == CE_ADD_PARTICLESPAWNER) {
+
+		{
+			JMutexAutoLock lock(m_spawner_list_lock);
+			if (irrlicht_spawners.find(event->add_particlespawner.id) !=
+			    irrlicht_spawners.end())
 			{
 				MutexAutoLock lock(m_spawner_list_lock);
 				if (m_particle_spawners.find(event->add_particlespawner.id) !=
