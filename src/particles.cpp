@@ -278,9 +278,9 @@ void ParticleManager::handleParticleEvent(ClientEvent *event, IGameDef *gamedef,
 				scene::ISceneNode *node = smgr->getSceneNodeFromId(
 					irrlicht_spawners.find(event->delete_particlespawner.id)->second);
 				if(node)
-					smgr->addToDeletionQueue(node);
+					m_smgr->addToDeletionQueue(node);
 
-				irrlicht_spawners.erase(irrlicht_spawners.find(event->add_particlespawner.id));
+				irrlicht_spawners.erase(irrlicht_spawners.find(event->delete_particlespawner.id));
 
 			}
 			break;
