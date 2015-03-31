@@ -226,7 +226,7 @@ Client::Client(
 		device->getSceneManager(),
 		tsrc, this, device
 	),
-	m_particle_manager(&m_env),
+	m_particle_manager(&m_env, device->getSceneManager()),
 	m_con(PROTOCOL_ID, 512, CONNECTION_TIMEOUT, ipv6, this),
 	m_device(device),
 	m_camera(NULL),
