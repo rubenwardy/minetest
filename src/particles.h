@@ -195,8 +195,9 @@ private:
 	std::vector<Particle*> m_particles;
 	std::map<u32, ParticleSpawner*> m_particle_spawners;
 
-	std::list<s32> particlespawners;
+	std::map<u32, s32> irrlicht_spawners; //mt id/irrlicht node id
 
+	//std::list<s32> particlespawners;
 
 	ClientEnvironment* m_env;
 	Mutex m_particle_list_lock;
