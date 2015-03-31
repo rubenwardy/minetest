@@ -195,6 +195,9 @@ private:
 	std::vector<Particle*> m_particles;
 	std::map<u32, ParticleSpawner*> m_particle_spawners;
 
+	std::list<s32> particlespawners;
+
+
 	ClientEnvironment* m_env;
 	Mutex m_particle_list_lock;
 	Mutex m_spawner_list_lock;
