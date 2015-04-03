@@ -54,6 +54,9 @@ public:
 	void addNodeParticle(IGameDef* gamedef, LocalPlayer *player,
 			     v3s16 pos, const TileSpec tiles[], int number);
 
+	void deleteID(s32 id);
+
+
 protected:
 //	void addParticle(Particle* toadd);
 
