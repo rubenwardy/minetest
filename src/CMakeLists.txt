@@ -536,6 +536,7 @@ set(client_SRCS
 	mapblock_mesh.cpp
 	mesh.cpp
 	minimap.cpp
+	mrt.cpp
 	particles.cpp
 	shader.cpp
 	sky.cpp
