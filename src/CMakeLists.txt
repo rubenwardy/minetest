@@ -496,6 +496,7 @@ endif()
 # Client sources
 if (BUILD_CLIENT)
 	add_subdirectory(client)
+	add_subdirectory(irrpp)
 endif(BUILD_CLIENT)
 
 set(client_SRCS
@@ -504,6 +505,7 @@ set(client_SRCS
 	${sound_SRCS}
 	${client_network_SRCS}
 	${client_irrlicht_changes_SRCS}
+	${irrPP_SRCS}
 	camera.cpp
 	client.cpp
 	clientmap.cpp
@@ -888,4 +890,3 @@ endif()
 if (BUILD_CLIENT AND USE_FREETYPE)
 	add_subdirectory(cguittfont)
 endif()
-

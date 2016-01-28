@@ -42,8 +42,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "guiPasswordChange.h"
 #include "guiVolumeChange.h"
 #include "hud.h"
+#include "irrpp/irrPP.h"
 #include "mainmenumanager.h"
 #include "mapblock.h"
+#include "minimap.h"
+#include "mrt.h"
 #include "nodedef.h"         // Needed for determining pointing to nodes
 #include "nodemetadata.h"
 #include "particles.h"
@@ -53,6 +56,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "settings.h"
 #include "shader.h"          // For ShaderSource
 #include "sky.h"
+#include "sound.h"
 #include "subgame.h"
 #include "tool.h"
 #include "util/directiontables.h"
@@ -1772,6 +1776,9 @@ private:
 	GameRunData runData;
 	VolatileRunFlags flags;
 
+	video::irrPP *irrPP;
+	Mrt *mrt;
+
 	/* 'cache'
 	   This class does take ownership/responsibily for cleaning up etc of any of
 	   these items (e.g. device)
@@ -2008,6 +2015,24 @@ void Game::run()
 	CameraOrientation cam_view  = { 0 };
 	FpsControl draw_times       = { 0 };
 	f32 dtime; // in seconds
+
+	runData.time_from_last_punch  = 10.0;
+	runData.profiler_max_page = 3;
+	runData.update_wielded_item_trigger = true;
+
+	flags.show_chat = true;
+	flags.show_hud = true;
+	flags.show_minimap = g_settings->getBool("enable_minimap");
+	flags.show_debug = g_settings->getBool("show_debug");
+	flags.invert_mouse = g_settings->getBool("invert_mouse");
+	flags.first_loop_after_window_activation = true;
+
+	std::string pp_shaders_path = std::string("client") + DIR_DELIM
+				+ "shaders" + DIR_DELIM
+				+ "postprocess" + DIR_DELIM;
+
+	irrPP = createIrrPP(device, video::EPQ_FULL, pp_shaders_path.c_str());
+	mrt = new Mrt(device);
 
 	/* Clear the profiler */
 	Profiler::GraphValues dummyvalues;
@@ -4405,9 +4430,8 @@ void Game::updateFrame(ProfilerGraph *graph, RunStats *stats,
 		stats->beginscenetime = timer.stop(true);
 	}
 
-	draw_scene(driver, smgr, *camera, *client, player, *hud, *mapper,
-			guienv, screensize, skycolor, flags.show_hud,
-			flags.show_minimap);
+	draw_scene(driver, smgr, *camera, *client, player, *hud, *mapper, *mrt, *irrPP,
+			guienv, screensize, skycolor, flags.show_hud, flags.show_minimap);
 
 	/*
 		Profiler graph

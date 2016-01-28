@@ -468,7 +468,7 @@ void draw_plain(Camera &camera, bool show_hud, Hud &hud,
 
 void draw_scene(video::IVideoDriver *driver, scene::ISceneManager *smgr,
 		Camera &camera, Client& client, LocalPlayer *player, Hud &hud,
-		Mapper &mapper, gui::IGUIEnvironment *guienv,
+		Mapper &mapper, Mrt &mrt, video::irrPP &irrPP, gui::IGUIEnvironment *guienv,
 		const v2u32 &screensize, const video::SColor &skycolor,
 		bool show_hud, bool show_minimap)
 {
@@ -490,7 +490,6 @@ void draw_scene(video::IVideoDriver *driver, scene::ISceneManager *smgr,
 
 	std::string draw_mode = g_settings->get("3d_mode");
 
-	smgr->drawAll();
 
 	if (draw_mode == "anaglyph")
 	{
@@ -522,10 +521,29 @@ void draw_scene(video::IVideoDriver *driver, scene::ISceneManager *smgr,
 				smgr, screensize, draw_wield_tool, client, guienv, skycolor);
 		draw_crosshair = false;
 		show_hud = false;
-	}
-	else {
-		draw_plain(camera, show_hud, hud, driver,
-				draw_wield_tool, client, guienv);
+	} else {
+		mrt.updateMRT();
+		mrt.setRenderTarget(irr::video::SColor(255, skycolor.getRed(), skycolor.getGreen(), skycolor.getBlue()));
+		//driver->setRenderTarget(irrPP.getRTT2(), true, true,
+		//irr::video::SColor(0, skycolor.getRed(), skycolor.getGreen(), skycolor.getBlue()));
+		draw_plain(camera, show_hud, hud, driver, draw_wield_tool, client, guienv);
+
+		// FIXME: is this correct?
+		smgr->drawAll();
+		driver->setRenderTarget(0);
+		driver->draw2DImage(mrt.getColorRTT(), irr::core::position2d<s32>(0,0),
+	                irr::core::rect<s32>(0,0,screensize.X,screensize.Y), 0,
+	                video::SColor(255,255,255,255), true);
+		draw2DImageFilterScaled(driver, mrt.getNormalRTT(),
+				irr::core::rect<s32>(0, 0, 320, 240),
+				irr::core::rect<s32>(0, 0, screensize.X, screensize.Y), 0, 0, false);
+		draw2DImageFilterScaled(driver, mrt.getDepthRTT(),
+				irr::core::rect<s32>(0, 250, 320, 240+250),
+				irr::core::rect<s32>(0, 0, screensize.X, screensize.Y), 0, 0, false);
+
+		if (draw_wield_tool)
+			camera.drawWieldedTool();
+		//irrPP.render(irrPP.getRTT2());
 	}
 
 	/*
@@ -534,6 +552,7 @@ void draw_scene(video::IVideoDriver *driver, scene::ISceneManager *smgr,
 	{
 		client.getEnv().getClientMap().renderPostFx(camera.getCameraMode());
 	}
+
 
 	//TODO how to make those 3d too
 	if (show_hud)

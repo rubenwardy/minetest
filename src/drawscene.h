@@ -23,6 +23,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "camera.h"
 #include "hud.h"
 #include "minimap.h"
+#include "irrpp/irrPP.h"
+#include "mrt.h"
 #include "irrlichttypes_extrabloated.h"
 
 
@@ -32,8 +34,8 @@ void draw_load_screen(const std::wstring &text, IrrlichtDevice *device,
 
 void draw_scene(video::IVideoDriver *driver, scene::ISceneManager *smgr,
 		Camera &camera, Client &client, LocalPlayer *player,
-		Hud &hud, Mapper &mapper, gui::IGUIEnvironment *guienv,
-		const v2u32 &screensize, const video::SColor &skycolor,
-		bool show_hud, bool show_minimap);
+		Hud &hud, Mapper &mapper,  Mrt &mrt, video::irrPP &irrPP,
+		gui::IGUIEnvironment *guienv, const v2u32 &screensize,
+		const video::SColor &skycolor, bool show_hud, bool show_minimap);
 
 #endif /* DRAWSCENE_H_ */
