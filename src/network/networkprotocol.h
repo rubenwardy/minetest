@@ -138,6 +138,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 		Add nodedef v3 - connected nodeboxes
 	PROTOCOL_VERSION 28:
 		CPT2_MESHOPTIONS
+		TileDef version 3:
+			Add TileDef normal_texture and special_texture fields
+		ContenFeatures:	Add shader_name field
 */
 
 #define LATEST_PROTOCOL_VERSION 28

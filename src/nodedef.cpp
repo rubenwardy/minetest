@@ -188,7 +188,9 @@ void NodeBox::deSerialize(std::istream &is)
 
 void TileDef::serialize(std::ostream &os, u16 protocol_version) const
 {
-	if (protocol_version >= 26)
+	if (protocol_version >= 27) {
+		writeU8(os, 3);
+	} else if (protocol_version >= 26)
 		writeU8(os, 2);
 	else if (protocol_version >= 17)
 		writeU8(os, 1);
@@ -204,6 +206,10 @@ void TileDef::serialize(std::ostream &os, u16 protocol_version) const
 	if (protocol_version >= 26) {
 		writeU8(os, tileable_horizontal);
 		writeU8(os, tileable_vertical);
+	}
+	if (protocol_version >= 27) {
+		os<<serializeString(normal_texture);
+		os<<serializeString(special_texture);
 	}
 }
 
@@ -222,11 +228,16 @@ void TileDef::deSerialize(std::istream &is, const u8 contenfeatures_version, con
 		tileable_vertical = readU8(is);
 	}
 
+	if (version >= 3) {
+		normal_texture = deSerializeString(is);
+		special_texture = deSerializeString(is);
+	}
+
 	if ((contenfeatures_version < 8) &&
-		((drawtype == NDT_MESH) ||
-		 (drawtype == NDT_FIRELIKE) ||
-		 (drawtype == NDT_LIQUID) ||
-		 (drawtype == NDT_PLANTLIKE)))
+			((drawtype == NDT_MESH) ||
+			(drawtype == NDT_FIRELIKE) ||
+			(drawtype == NDT_LIQUID) ||
+			(drawtype == NDT_PLANTLIKE)))
 		backface_culling = false;
 }
 
@@ -249,14 +260,14 @@ static void deSerializeSimpleSoundSpec(SimpleSoundSpec &ss, std::istream &is)
 
 void TextureSettings::readSettings()
 {
-	connected_glass                = g_settings->getBool("connected_glass");
-	opaque_water                   = g_settings->getBool("opaque_water");
-	bool enable_shaders            = g_settings->getBool("enable_shaders");
-	bool enable_bumpmapping        = g_settings->getBool("enable_bumpmapping");
-	bool enable_parallax_occlusion = g_settings->getBool("enable_parallax_occlusion");
-	enable_mesh_cache              = g_settings->getBool("enable_mesh_cache");
-	enable_minimap                 = g_settings->getBool("enable_minimap");
-	std::string leaves_style_str   = g_settings->get("leaves_style");
+	connected_glass                 = g_settings->getBool("connected_glass");
+	opaque_water                    = g_settings->getBool("opaque_water");
+	bool enable_shaders             = g_settings->getBool("enable_shaders");
+	bool enable_bumpmapping         = g_settings->getBool("enable_bumpmapping");
+	bool enable_parallax_occlusion  = g_settings->getBool("enable_parallax_occlusion");
+	enable_mesh_cache               = g_settings->getBool("enable_mesh_cache");
+	enable_minimap                  = g_settings->getBool("enable_minimap");
+	std::string leaves_style_str    = g_settings->get("leaves_style");
 
 	use_normal_texture = enable_shaders &&
 		(enable_bumpmapping || enable_parallax_occlusion);
@@ -308,6 +319,7 @@ void ContentFeatures::reset()
 	groups["dig_immediate"] = 2;
 	drawtype = NDT_NORMAL;
 	mesh = "";
+	shader_name = "";
 #ifndef SERVER
 	for(u32 i = 0; i < 24; i++)
 		mesh_ptr[i] = NULL;
@@ -429,6 +441,7 @@ void ContentFeatures::serialize(std::ostream &os, u16 protocol_version) const
 			i != connects_to_ids.end(); ++i)
 		writeU16(os, *i);
 	writeU8(os, connect_sides);
+	os<<serializeString(shader_name);
 }
 
 void ContentFeatures::deSerialize(std::istream &is)
@@ -509,6 +522,7 @@ void ContentFeatures::deSerialize(std::istream &is)
 	for (u16 i = 0; i < connects_to_size; i++)
 		connects_to_ids.insert(readU16(is));
 	connect_sides = readU8(is);
+	shader_name = deSerializeString(is);
 	}catch(SerializationError &e) {};
 }
 
@@ -522,11 +536,15 @@ void ContentFeatures::fillTileAttribs(ITextureSource *tsrc, TileSpec *tile,
 	tile->alpha         = alpha;
 	tile->material_type = material_type;
 
-	// Normal texture and shader flags texture
+	// Normal, special and shader flags texture
 	if (use_normal_texture) {
-		tile->normal_texture = tsrc->getNormalTexture(tiledef->name);
+		if (tiledef->normal_texture == "")
+			tile->normal_texture = tsrc->getNormalTexture(tiledef->name);
+		else
+			tile->normal_texture = tsrc->getTextureForMesh(tiledef->normal_texture);
 	}
-	tile->flags_texture = tsrc->getShaderFlagsTexture(tile->normal_texture ? true : false);
+	if (tiledef->special_texture != "")
+		tile->special_texture = tsrc->getTextureForMesh(tiledef->special_texture);
 
 	// Material flags
 	tile->material_flags = 0;
@@ -595,7 +613,6 @@ void ContentFeatures::updateTextures(ITextureSource *tsrc, IShaderSource *shdsrc
 	}
 
 	bool is_liquid = false;
-	bool is_water_surface = false;
 
 	u8 material_type = (alpha == 255) ?
 		TILE_MATERIAL_BASIC : TILE_MATERIAL_ALPHA;
@@ -684,19 +701,12 @@ void ContentFeatures::updateTextures(ITextureSource *tsrc, IShaderSource *shdsrc
 	if (is_liquid) {
 		material_type = (alpha == 255) ?
 			TILE_MATERIAL_LIQUID_OPAQUE : TILE_MATERIAL_LIQUID_TRANSPARENT;
-		if (name == "default:water_source")
-			is_water_surface = true;
 	}
 
 	u32 tile_shader[6];
+	std::string actual_shader_name = (shader_name.empty()) ? "nodes_shader" : shader_name;
 	for (u16 j = 0; j < 6; j++) {
-		tile_shader[j] = shdsrc->getShader("nodes_shader",
-			material_type, drawtype);
-	}
-
-	if (is_water_surface) {
-		tile_shader[0] = shdsrc->getShader("water_surface_shader",
-			material_type, drawtype);
+		tile_shader[j] = shdsrc->getShader(actual_shader_name, material_type, drawtype);
 	}
 
 	// Tiles (fill in f->tiles[])
@@ -1189,6 +1199,7 @@ void CNodeDefManager::updateTextures(IGameDef *gamedef,
 	IShaderSource *shdsrc = gamedef->getShaderSource();
 	scene::ISceneManager* smgr = gamedef->getSceneManager();
 	scene::IMeshManipulator* meshmanip = smgr->getMeshManipulator();
+
 	TextureSettings tsettings;
 	tsettings.readSettings();
 

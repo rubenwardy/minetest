@@ -917,6 +917,7 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
 	CachedPixelShaderSetting<float, 3> m_minimap_yaw;
 	CachedPixelShaderSetting<SamplerLayer_t> m_base_texture;
 	CachedPixelShaderSetting<SamplerLayer_t> m_normal_texture;
+	CachedPixelShaderSetting<SamplerLayer_t> m_special_texture;
 	CachedPixelShaderSetting<SamplerLayer_t> m_texture_flags;
 	Client *m_client;
 
@@ -949,6 +950,7 @@ public:
 		m_minimap_yaw("yawVec"),
 		m_base_texture("baseTexture"),
 		m_normal_texture("normalTexture"),
+		m_special_texture("specialTexture"),
 		m_texture_flags("textureFlags"),
 		m_client(client)
 	{
@@ -1019,9 +1021,11 @@ public:
 
 		SamplerLayer_t base_tex = 0,
 				normal_tex = 1,
-				flags_tex = 2;
+				flags_tex = 2,
+				special_tex = 3;
 		m_base_texture.set(&base_tex, services);
 		m_normal_texture.set(&normal_tex, services);
+		m_special_texture.set(&special_tex, services);
 		m_texture_flags.set(&flags_tex, services);
 	}
 };

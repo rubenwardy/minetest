@@ -1198,13 +1198,17 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 		material.setFlag(video::EMF_FOG_ENABLE, true);
 		material.setTexture(0, p.tile.texture);
 
-		if (m_enable_shaders) {
+		if (p.tile.material_flags & MATERIAL_FLAG_HIGHLIGHTED) {
+			material.MaterialType = video::EMT_TRANSPARENT_ADD_COLOR;
+		} else if (m_enable_shaders) {
 			material.MaterialType = m_shdrsrc->getShaderInfo(p.tile.shader_id).material;
 			p.tile.applyMaterialOptionsWithShaders(material);
 			if (p.tile.normal_texture) {
 				material.setTexture(1, p.tile.normal_texture);
 			}
 			material.setTexture(2, p.tile.flags_texture);
+			if (p.tile.special_texture)
+				material.setTexture(3, p.tile.special_texture);
 		} else {
 			p.tile.applyMaterialOptions(material);
 		}
