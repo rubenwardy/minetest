@@ -47,7 +47,7 @@ void main(void)
 	v.z = dot(eyeVec, normal);
 	tsEyeVec = normalize (v);
 
-	sDepth = (mWorldViewProj * gl_Vertex).z / 240.0; // cameraFar;
+	sDepth = (mWorldViewProj * gl_Vertex).z / 2400.0; // cameraFar;
 
 	gl_FrontColor = gl_BackColor = gl_Color;
 }

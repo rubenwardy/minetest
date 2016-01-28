@@ -120,15 +120,15 @@ float disp_z;
 	v.x = dot(lightVec, tangent);
 	v.y = dot(lightVec, binormal);
 	v.z = dot(lightVec, normal);
-	tsLightVec = normalize(v);
+	tsLightVec = normalize (v);
 
 	eyeVec = -(gl_ModelViewMatrix * gl_Vertex).xyz;
 	v.x = dot(eyeVec, tangent);
 	v.y = dot(eyeVec, binormal);
 	v.z = dot(eyeVec, normal);
-	tsEyeVec = normalize(v);
+	tsEyeVec = normalize (v);
 
-	sDepth = (mWorldViewProj * gl_Vertex).z / 240.0; // cameraFar;
+	sDepth = (mWorldViewProj * gl_Vertex).z / 2400.0; // cameraFar;
 
 	vec4 color;
 	float day = gl_Color.r;
@@ -145,16 +145,17 @@ float disp_z;
 
 	// Emphase blue a bit in darker places
 	// See C++ implementation in mapblock_mesh.cpp finalColorBlend()
-	b += max(0.0, (1.0 - abs(b - 0.13) / 0.17) * 0.025);
+	b += max(0.0, (1.0 - abs(b - 0.13)/0.17) * 0.025);
 
 	// Artificial light is yellow-ish
 	// See C++ implementation in mapblock_mesh.cpp finalColorBlend()
-	rg += max(0.0, (1.0 - abs(rg - 0.85) / 0.15) * 0.065);
+	rg += max(0.0, (1.0 - abs(rg - 0.85)/0.15) * 0.065);
 
 	color.r = rg;
 	color.g = rg;
 	color.b = b;
 
 	color.a = gl_Color.a;
-	gl_FrontColor = gl_BackColor = clamp(color, 0.0, 1.0);
+	gl_FrontColor = gl_BackColor = clamp(color,0.0,1.0);
+
 }

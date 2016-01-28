@@ -524,16 +524,14 @@ void draw_scene(video::IVideoDriver *driver, scene::ISceneManager *smgr,
 	} else {
 		mrt.updateMRT();
 		mrt.setRenderTarget(irr::video::SColor(255, skycolor.getRed(), skycolor.getGreen(), skycolor.getBlue()));
-		//driver->setRenderTarget(irrPP.getRTT2(), true, true,
-		//irr::video::SColor(0, skycolor.getRed(), skycolor.getGreen(), skycolor.getBlue()));
 		draw_plain(camera, show_hud, hud, driver, draw_wield_tool, client, guienv);
 
 		// FIXME: is this correct?
 		smgr->drawAll();
 		driver->setRenderTarget(0);
 		driver->draw2DImage(mrt.getColorRTT(), irr::core::position2d<s32>(0,0),
-	                irr::core::rect<s32>(0,0,screensize.X,screensize.Y), 0,
-	                video::SColor(255,255,255,255), true);
+				irr::core::rect<s32>(0,0,screensize.X,screensize.Y), 0,
+				video::SColor(255,255,255,255), true);
 		draw2DImageFilterScaled(driver, mrt.getNormalRTT(),
 				irr::core::rect<s32>(0, 0, 320, 240),
 				irr::core::rect<s32>(0, 0, screensize.X, screensize.Y), 0, 0, false);
@@ -541,9 +539,10 @@ void draw_scene(video::IVideoDriver *driver, scene::ISceneManager *smgr,
 				irr::core::rect<s32>(0, 250, 320, 240+250),
 				irr::core::rect<s32>(0, 0, screensize.X, screensize.Y), 0, 0, false);
 
+		irrPP.render(mrt.getColorRTT());
+
 		if (draw_wield_tool)
 			camera.drawWieldedTool();
-		//irrPP.render(irrPP.getRTT2());
 	}
 
 	/*
