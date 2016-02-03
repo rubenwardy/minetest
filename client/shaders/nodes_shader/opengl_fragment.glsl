@@ -1,12 +1,15 @@
 uniform sampler2D baseTexture;
 uniform sampler2D normalTexture;
 uniform sampler2D textureFlags;
+uniform sampler2D specialTexture;
 
 uniform vec4 skyBgColor;
 uniform float fogDistance;
 uniform vec3 eyePosition;
 
 varying vec3 vPosition;
+varying vec3 FragPos;
+
 varying vec3 worldPosition;
 varying vec3 sunPosition;
 varying float area_enable_parallax;
@@ -59,6 +62,14 @@ vec4 applyToneMapping(vec4 color)
 	return vec4(pow(color.rgb, vec3(1.0 / gamma)), color.a);
 }
 #endif
+
+float linearizeDepth(float depth)
+{
+	float NEAR = 1.0;
+	float FAR = 20000.0;
+	depth = depth * 2.0 - 1.0;
+	return  (-NEAR * FAR) / (depth * (FAR - NEAR) -FAR);
+}
 
 void get_texture_flags()
 {
@@ -132,7 +143,7 @@ void main(void)
 	vec2 uv = gl_TexCoord[0].st;
 	bool use_normalmap = false;
 	get_texture_flags();
-	mat3 tangentToView = mat3(tangent, binormal, normal);
+	mat3 tangentToView = mat3(normalize(tangent), normalize(binormal), normalize(normal));
 
 	vec3 screenNormal = vec3(1.0);
 #ifdef ENABLE_PARALLAX_OCCLUSION
@@ -190,11 +201,11 @@ void main(void)
 
 #ifdef ENABLE_BUMPMAPPING
 	if (use_normalmap) {
-		vec3 L = normalize(tsLightVec);
+		vec3 L = normalize(lightVec);
 		vec3 E = normalize(eyeVec);
 		float specular = pow(clamp(dot(reflect(L, bump.xyz), E), 0.0, 1.0), 1.0);
 		float diffuse = dot(-E,bump.xyz);
-		color = (diffuse + 0.0 * specular) * base.rgb;
+		color = (diffuse + 0.2 * specular) * base.rgb;
 	} else {
 		color = base.rgb;
 	}
@@ -224,6 +235,8 @@ void main(void)
 	}
 
 	gl_FragData[0] = vec4(col.rgb, base.a);
-	gl_FragData[1] = vec4(1.0 - sDepth, 1.0 - sDepth, 1.0 - sDepth, 1.0);
+	float depth = linearizeDepth(gl_FragCoord.z);
+	gl_FragData[1] = vec4(depth / 2450.0);
+	//gl_FragData[1] = vec4(1.0 - sDepth,1.0 - sDepth,1.0 - sDepth, 1.0);
 	gl_FragData[2] = vec4(normal, 1.0);
 }
