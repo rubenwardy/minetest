@@ -400,10 +400,10 @@ std::string serializeLongString(const std::string &plain);
 std::string deSerializeLongString(std::istream &is);
 
 // Creates a string encoded in JSON format (almost equivalent to a C string literal)
-std::string serializeJsonString(const std::string &plain);
+void serializeJsonString(const std::string &plain, std::ostream &os);
 
 // Reads a string encoded in JSON format
-std::string deSerializeJsonString(std::istream &is);
+void deSerializeJsonString(std::istream &is, std::ostream &os);
 
 // If the string contains spaces, quotes or control characters, encodes as JSON.
 // Else returns the string unmodified.

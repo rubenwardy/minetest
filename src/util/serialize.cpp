@@ -241,9 +241,8 @@ std::string deSerializeLongString(std::istream &is)
 //// JSON
 ////
 
-std::string serializeJsonString(const std::string &plain)
+void serializeJsonString(const std::string &plain, std::ostream os)
 {
-	std::ostringstream os(std::ios::binary);
 	os << "\"";
 
 	for (size_t i = 0; i < plain.size(); i++) {
@@ -287,12 +286,10 @@ std::string serializeJsonString(const std::string &plain)
 	}
 
 	os << "\"";
-	return os.str();
 }
 
-std::string deSerializeJsonString(std::istream &is)
+void deSerializeJsonString(std::istream &is, std::ostream &os)
 {
-	std::ostringstream os(std::ios::binary);
 	char c, c2;
 
 	// Parse initial doublequote
@@ -307,7 +304,7 @@ std::string deSerializeJsonString(std::istream &is)
 			throw SerializationError("JSON string ended prematurely");
 
 		if (c == '"') {
-			return os.str();
+			return;
 		} else if (c == '\\') {
 			c2 = is.get();
 			if (is.eof())
@@ -350,20 +347,20 @@ std::string deSerializeJsonString(std::istream &is)
 			os << c;
 		}
 	}
-
-	return os.str();
 }
 
-std::string serializeJsonStringIfNeeded(const std::string &s)
+std::string serializeJsonStringIfNeeded(const std::string &s, std::ostream &os)
 {
 	for (size_t i = 0; i < s.size(); ++i) {
-		if (s[i] <= 0x1f || s[i] >= 0x7f || s[i] == ' ' || s[i] == '\"')
-			return serializeJsonString(s);
+		if (s[i] <= 0x1f || s[i] >= 0x7f || s[i] == ' ' || s[i] == '\"') {
+			serializeJsonString(s, os);
+			return;
+		}
 	}
-	return s;
+	os << s;
 }
 
-std::string deSerializeJsonStringIfNeeded(std::istream &is)
+std::string deSerializeJsonStringIfNeeded(std::istream &is, std::ostream &os)
 {
 	std::ostringstream tmp_os;
 	bool expect_initial_quote = true;
@@ -398,9 +395,9 @@ std::string deSerializeJsonStringIfNeeded(std::istream &is)
 	}
 	if (is_json) {
 		std::istringstream tmp_is(tmp_os.str(), std::ios::binary);
-		return deSerializeJsonString(tmp_is);
+		deSerializeJsonString(tmp_is, os);
 	} else
-		return tmp_os.str();
+		os << tmp_os.str();
 }
 
 ////

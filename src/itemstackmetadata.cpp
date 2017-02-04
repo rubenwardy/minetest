@@ -19,12 +19,14 @@ void ItemStackMetadata::serialize(std::ostream &os) const
 		os2 << it->first << DESERIALIZE_KV_DELIM
 		    << it->second << DESERIALIZE_PAIR_DELIM;
 	}
-	os << serializeJsonStringIfNeeded(os2.str());
+	serializeJsonStringIfNeeded(os2.str(), os);
 }
 
 void ItemStackMetadata::deSerialize(std::istream &is)
 {
-	std::string in = deSerializeJsonStringIfNeeded(is);
+	std::ostringstream os(std::ios::binary);
+	deSerializeJsonStringIfNeeded(is, os);
+	std::string in = os.str();
 
 	m_stringvars.clear();
 
