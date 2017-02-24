@@ -61,29 +61,48 @@ static JoystickLayout create_default_layout()
 	u32 bm = sb | fb; // Mask for Both Modifiers
 
 	// The back button means "ESC".
-	JLO_B_PB(KeyType::ESC,        1 << 6,      1 << 6);
+	JLO_B_PB(KeyType::ESC,        1 << 8,      1 << 8);
+	JLO_B_PB(KeyType::ESC,        1 << 9,      1 << 9);
+
+	// 4 Buttons
+	JLO_B_PB(KeyType::JUMP,     1 << 0,      1 << 0); // A/green
+	JLO_B_PB(KeyType::ESC,      1 << 1,      1 << 1); // B/red
+	JLO_B_PB(KeyType::SPECIAL1, 1 << 2,      1 << 2); // X/blue
+	JLO_B_PB(KeyType::SNEAK,    1 << 3,      1 << 3); // Y/yellow
+
+	// Triggers
+	JLO_B_PB(KeyType::MOUSE_L,     1 << 6,   1 << 6);
+	JLO_B_PB(KeyType::MOUSE_R,     1 << 7,   1 << 7);
+	JLO_B_PB(KeyType::SCROLL_UP,   1 << 4,   1 << 4);
+	JLO_B_PB(KeyType::SCROLL_DOWN, 1 << 5,   1 << 5);
+
+	// D-PAD
+	JLO_B_PB(KeyType::INVENTORY, 1 << 15,   1 << 15);
+
+	// Joystick buttons
+	JLO_B_PB(KeyType::JUMP,     1 << 11,      1 << 11); // Left
 
 	// The start button counts as modifier as well as use key.
 	// JLO_B_PB(KeyType::USE,        sb,          sb));
 
 	// Accessible without start modifier button pressed
 	// regardless whether four is pressed or not
-	JLO_B_PB(KeyType::SNEAK,      sb | 1 << 2, 1 << 2);
+	// JLO_B_PB(Key/ype::SNEAK,      sb | 1 << 2, 1 << 2);
 
 	// Accessible without four modifier button pressed
 	// regardless whether start is pressed or not
-	JLO_B_PB(KeyType::MOUSE_L,    fb | 1 << 4, 1 << 4);
-	JLO_B_PB(KeyType::MOUSE_R,    fb | 1 << 5, 1 << 5);
+	// JLO_B_PB(KeyType::MOUSE_L,    fb | 1 << 6, 1 << 6);
+	// JLO_B_PB(KeyType::MOUSE_R,    fb | 1 << 7, 1 << 7);
 
 	// Accessible without any modifier pressed
-	JLO_B_PB(KeyType::JUMP,       bm | 1 << 0, 1 << 0);
-	JLO_B_PB(KeyType::SPECIAL1,   bm | 1 << 1, 1 << 1);
+	// JLO_B_PB(KeyType::JUMP,       bm | 1 << 0, 1 << 0);
+	// JLO_B_PB(KeyType::SPECIAL1,   bm | 1 << 1, 1 << 1);
 
 	// Accessible with start button not pressed, but four pressed
 	// TODO find usage for button 0
-	JLO_B_PB(KeyType::DROP,       bm | 1 << 1, fb | 1 << 1);
-	JLO_B_PB(KeyType::SCROLL_UP,  bm | 1 << 4, fb | 1 << 4);
-	JLO_B_PB(KeyType::SCROLL_DOWN,bm | 1 << 5, fb | 1 << 5);
+	// JLO_B_PB(KeyType::DROP,       bm | 1 << 1, fb | 1 << 1);
+	// JLO_B_PB(KeyType::SCROLL_UP,  bm | 1 << 4, fb | 1 << 4);
+	// JLO_B_PB(KeyType::SCROLL_DOWN,bm | 1 << 5, fb | 1 << 5);
 
 	// Accessible with start button and four pressed
 	// TODO find usage for buttons 0, 1 and 4, 5
@@ -97,8 +116,8 @@ static JoystickLayout create_default_layout()
 	JLO_A_PB(KeyType::RIGHT,    0, -1, 1024);
 
 	// Scroll buttons
-	JLO_A_PB(KeyType::SCROLL_UP,   2, -1, 1024);
-	JLO_A_PB(KeyType::SCROLL_DOWN, 5, -1, 1024);
+	// JLO_A_PB(KeyType::SCROLL_UP,   2, -1, 1024);
+	// JLO_A_PB(KeyType::SCROLL_DOWN, 5, -1, 1024);
 
 	return jlo;
 }
@@ -115,6 +134,7 @@ JoystickController::JoystickController()
 	}
 	clear();
 }
+
 
 bool JoystickController::handleEvent(const irr::SEvent::SJoystickEvent &ev)
 {
@@ -155,6 +175,7 @@ bool JoystickController::handleEvent(const irr::SEvent::SJoystickEvent &ev)
 	for (size_t i = 0; i < JA_COUNT; i++) {
 		const JoystickAxisLayout &ax_la = m_layout->axes[i];
 		m_axes_vals[i] = ax_la.invert * ev.Axis[ax_la.axis_id];
+		// std::cerr << "axis " << i << " = " << m_axes_vals[i] << '\n';
 	}
 
 

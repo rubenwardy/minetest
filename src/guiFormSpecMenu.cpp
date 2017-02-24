@@ -2920,7 +2920,7 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
 	// Fix Esc/Return key being eaten by checkboxen and tables
 	if(event.EventType==EET_KEY_INPUT_EVENT) {
 		KeyPress kp(event.KeyInput);
-		if (kp == EscapeKey || kp == CancelKey
+		if (event.KeyInput.Key == KEY_ESCAPE // TODO: make escape and cancel bindable
 				|| kp == getKeySetting("keymap_inventory")
 				|| event.KeyInput.Key==KEY_RETURN) {
 			gui::IGUIElement *focused = Environment->getFocus();
@@ -3208,8 +3208,9 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 {
 	if (event.EventType==EET_KEY_INPUT_EVENT) {
 		KeyPress kp(event.KeyInput);
-		if (event.KeyInput.PressedDown && ( (kp == EscapeKey) ||
-				(kp == getKeySetting("keymap_inventory")) || (kp == CancelKey))) {
+		if (event.KeyInput.PressedDown && (event.KeyInput.Key == KEY_ESCAPE ||
+				event.KeyInput.Key == KEY_CANCEL || // TODO: make ESC bindable
+				kp == getKeySetting("keymap_inventory"))) {
 			tryClose();
 			return true;
 		} else if (m_client != NULL && event.KeyInput.PressedDown &&

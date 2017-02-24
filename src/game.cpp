@@ -1110,106 +1110,6 @@ static void updateChat(Client &client, f32 dtime, bool show_debug,
 		show_chat && recent_chat_count != 0 && !show_profiler);
 }
 
-
-/****************************************************************************
- Fast key cache for main game loop
- ****************************************************************************/
-
-/* This is faster than using getKeySetting with the tradeoff that functions
- * using it must make sure that it's initialised before using it and there is
- * no error handling (for example bounds checking). This is really intended for
- * use only in the main running loop of the client (the_game()) where the faster
- * (up to 10x faster) key lookup is an asset. Other parts of the codebase
- * (e.g. formspecs) should continue using getKeySetting().
- */
-struct KeyCache {
-
-	KeyCache()
-	{
-		handler = NULL;
-		populate();
-		populate_nonchanging();
-	}
-
-	void populate();
-
-	// Keys that are not settings dependent
-	void populate_nonchanging();
-
-	KeyPress key[KeyType::INTERNAL_ENUM_COUNT];
-	InputHandler *handler;
-};
-
-void KeyCache::populate_nonchanging()
-{
-	key[KeyType::ESC] = EscapeKey;
-}
-
-void KeyCache::populate()
-{
-	key[KeyType::FORWARD]      = getKeySetting("keymap_forward");
-	key[KeyType::BACKWARD]     = getKeySetting("keymap_backward");
-	key[KeyType::LEFT]         = getKeySetting("keymap_left");
-	key[KeyType::RIGHT]        = getKeySetting("keymap_right");
-	key[KeyType::JUMP]         = getKeySetting("keymap_jump");
-	key[KeyType::SPECIAL1]     = getKeySetting("keymap_special1");
-	key[KeyType::SNEAK]        = getKeySetting("keymap_sneak");
-
-	key[KeyType::AUTORUN]      = getKeySetting("keymap_autorun");
-
-	key[KeyType::DROP]         = getKeySetting("keymap_drop");
-	key[KeyType::INVENTORY]    = getKeySetting("keymap_inventory");
-	key[KeyType::CHAT]         = getKeySetting("keymap_chat");
-	key[KeyType::CMD]          = getKeySetting("keymap_cmd");
-	key[KeyType::CONSOLE]      = getKeySetting("keymap_console");
-	key[KeyType::MINIMAP]      = getKeySetting("keymap_minimap");
-	key[KeyType::FREEMOVE]     = getKeySetting("keymap_freemove");
-	key[KeyType::FASTMOVE]     = getKeySetting("keymap_fastmove");
-	key[KeyType::NOCLIP]       = getKeySetting("keymap_noclip");
-	key[KeyType::CINEMATIC]    = getKeySetting("keymap_cinematic");
-	key[KeyType::SCREENSHOT]   = getKeySetting("keymap_screenshot");
-	key[KeyType::TOGGLE_HUD]   = getKeySetting("keymap_toggle_hud");
-	key[KeyType::TOGGLE_CHAT]  = getKeySetting("keymap_toggle_chat");
-	key[KeyType::TOGGLE_FORCE_FOG_OFF]
-			= getKeySetting("keymap_toggle_force_fog_off");
-	key[KeyType::TOGGLE_UPDATE_CAMERA]
-			= getKeySetting("keymap_toggle_update_camera");
-	key[KeyType::TOGGLE_DEBUG]
-			= getKeySetting("keymap_toggle_debug");
-	key[KeyType::TOGGLE_PROFILER]
-			= getKeySetting("keymap_toggle_profiler");
-	key[KeyType::CAMERA_MODE]
-			= getKeySetting("keymap_camera_mode");
-	key[KeyType::INCREASE_VIEWING_RANGE]
-			= getKeySetting("keymap_increase_viewing_range_min");
-	key[KeyType::DECREASE_VIEWING_RANGE]
-			= getKeySetting("keymap_decrease_viewing_range_min");
-	key[KeyType::RANGESELECT]
-			= getKeySetting("keymap_rangeselect");
-	key[KeyType::ZOOM] = getKeySetting("keymap_zoom");
-
-	key[KeyType::QUICKTUNE_NEXT] = getKeySetting("keymap_quicktune_next");
-	key[KeyType::QUICKTUNE_PREV] = getKeySetting("keymap_quicktune_prev");
-	key[KeyType::QUICKTUNE_INC]  = getKeySetting("keymap_quicktune_inc");
-	key[KeyType::QUICKTUNE_DEC]  = getKeySetting("keymap_quicktune_dec");
-
-	key[KeyType::DEBUG_STACKS]   = getKeySetting("keymap_print_debug_stacks");
-
-	if (handler) {
-		// First clear all keys, then re-add the ones we listen for
-		handler->dontListenForKeys();
-		for (size_t i = 0; i < KeyType::INTERNAL_ENUM_COUNT; i++) {
-			handler->listenForKey(key[i]);
-		}
-		handler->listenForKey(EscapeKey);
-		handler->listenForKey(CancelKey);
-		for (size_t i = 0; i < 10; i++) {
-			handler->listenForKey(NumberKey[i]);
-		}
-	}
-}
-
-
 /****************************************************************************
 
  ****************************************************************************/
@@ -1453,37 +1353,32 @@ protected:
 
 	inline bool getLeftClicked()
 	{
-		return input->getLeftClicked() ||
-			input->joystick.getWasKeyDown(KeyType::MOUSE_L);
+		return input->getLeftClicked();
 	}
 	inline bool getRightClicked()
 	{
-		return input->getRightClicked() ||
-			input->joystick.getWasKeyDown(KeyType::MOUSE_R);
+		return input->getRightClicked();
 	}
 	inline bool isLeftPressed()
 	{
-		return input->getLeftState() ||
-			input->joystick.isKeyDown(KeyType::MOUSE_L);
+		return input->getLeftState();
 	}
 	inline bool isRightPressed()
 	{
-		return input->getRightState() ||
-			input->joystick.isKeyDown(KeyType::MOUSE_R);
+		return input->getRightState();
 	}
 	inline bool getLeftReleased()
 	{
-		return input->getLeftReleased() ||
-			input->joystick.wasKeyReleased(KeyType::MOUSE_L);
+		return input->getLeftReleased();
 	}
 
 	inline bool isKeyDown(GameKeyType k)
 	{
-		return input->isKeyDown(keycache.key[k]) || input->joystick.isKeyDown(k);
+		return input->isKeyDown(k);
 	}
 	inline bool wasKeyDown(GameKeyType k)
 	{
-		return input->wasKeyDown(keycache.key[k]) || input->joystick.wasKeyDown(k);
+		return input->wasKeyDown(k);
 	}
 
 #ifdef __ANDROID__
@@ -1560,8 +1455,6 @@ private:
 
 	std::wstring infotext;
 	std::wstring statustext;
-
-	KeyCache keycache;
 
 	IntervalLimiter profiler_interval;
 
@@ -1725,9 +1618,6 @@ bool Game::startup(bool *kill,
 	this->input               = input;
 	this->chat_backend        = chat_backend;
 	this->simple_singleplayer_mode = simple_singleplayer_mode;
-
-	keycache.handler = input;
-	keycache.populate();
 
 	driver              = device->getVideoDriver();
 	smgr                = device->getSceneManager();
@@ -2247,7 +2137,7 @@ bool Game::connectToServer(const std::string &playername,
 				break;
 			}
 
-			if (wasKeyDown(KeyType::ESC) || input->wasKeyDown(CancelKey)) {
+			if (wasKeyDown(KeyType::ESC) || input->wasKeyDown(KeyType::CANCEL)) {
 				*aborted = true;
 				infostream << "Connect aborted [Escape]" << std::endl;
 				break;
@@ -2327,7 +2217,7 @@ bool Game::getServerContent(bool *aborted)
 			return false;
 		}
 
-		if (wasKeyDown(KeyType::ESC) || input->wasKeyDown(CancelKey)) {
+		if (wasKeyDown(KeyType::ESC) || input->wasKeyDown(KeyType::CANCEL)) {
 			*aborted = true;
 			infostream << "Connect aborted [Escape]" << std::endl;
 			return false;
@@ -2436,7 +2326,7 @@ inline bool Game::handleCallbacks()
 	}
 
 	if (g_gamecallback->keyconfig_changed) {
-		keycache.populate(); // update the cache with new settings
+		input->notifyKeyConfigChanged();
 		g_gamecallback->keyconfig_changed = false;
 	}
 
@@ -2617,7 +2507,7 @@ void Game::processKeyInput(VolatileRunFlags *flags,
 		toggleAutorun(statustext_time);
 	} else if (wasKeyDown(KeyType::INVENTORY)) {
 		openInventory();
-	} else if (wasKeyDown(KeyType::ESC) || input->wasKeyDown(CancelKey)) {
+	} else if (wasKeyDown(KeyType::ESC) || input->wasKeyDown(KeyType::CANCEL)) {
 		if (!gui_chat_console->isOpenInhibited()) {
 			show_pause_menu(&current_formspec, client,
 				texture_src, device, &input->joystick,
@@ -3161,10 +3051,10 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
 	// distinguish between the two in order to know when to use joysticks.
 
 	PlayerControl control(
-		input->isKeyDown(keycache.key[KeyType::FORWARD]),
-		input->isKeyDown(keycache.key[KeyType::BACKWARD]),
-		input->isKeyDown(keycache.key[KeyType::LEFT]),
-		input->isKeyDown(keycache.key[KeyType::RIGHT]),
+		input->isKeyDown(KeyType::FORWARD),
+		input->isKeyDown(KeyType::BACKWARD),
+		input->isKeyDown(KeyType::LEFT),
+		input->isKeyDown(KeyType::RIGHT),
 		isKeyDown(KeyType::JUMP),
 		isKeyDown(KeyType::SPECIAL1),
 		isKeyDown(KeyType::SNEAK),

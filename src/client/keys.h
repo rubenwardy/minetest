@@ -36,6 +36,7 @@ public:
 		AUTORUN,
 
 		ESC,
+		CANCEL,
 
 		// Other
 		DROP,

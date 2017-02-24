@@ -55,8 +55,6 @@ protected:
 	std::string m_name;
 };
 
-extern const KeyPress EscapeKey;
-extern const KeyPress CancelKey;
 extern const KeyPress NumberKey[10];
 
 // Key configuration getter
@@ -68,4 +66,3 @@ void clearKeyCache();
 irr::EKEY_CODE keyname_to_keycode(const char *name);
 
 #endif
-

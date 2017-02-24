@@ -94,10 +94,11 @@ struct JoystickLayout {
 	s16 axes_dead_border;
 };
 
-class JoystickController {
 
+class JoystickController {
 public:
 	JoystickController();
+
 	bool handleEvent(const irr::SEvent::SJoystickEvent &ev);
 	void clear();
 

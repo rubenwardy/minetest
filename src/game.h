@@ -109,8 +109,9 @@ public:
 	{
 	}
 
-	virtual bool isKeyDown(const KeyPress &keyCode) = 0;
-	virtual bool wasKeyDown(const KeyPress &keyCode) = 0;
+	virtual bool isKeyDown(GameKeyType keyCode) = 0;
+	virtual bool wasKeyDown(const KeyPress &keyCode) = 0; // TODO: remove
+	virtual bool wasKeyDown(GameKeyType keyCode) = 0;
 
 	virtual void listenForKey(const KeyPress &keyCode) {}
 	virtual void dontListenForKeys() {}
@@ -132,6 +133,8 @@ public:
 	virtual void resetRightReleased() = 0;
 
 	virtual s32 getMouseWheel() = 0;
+
+	virtual void notifyKeyConfigChanged() = 0;
 
 	virtual void step(float dtime) {}
 
@@ -159,4 +162,3 @@ void the_game(bool *kill,
 		bool simple_singleplayer_mode);
 
 #endif
-

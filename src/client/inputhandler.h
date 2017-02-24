@@ -22,6 +22,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "irrlichttypes_extrabloated.h"
 #include "joystick_controller.h"
+#include "../keycode.h"
+#include "../game.h"
+#include "../mainmenumanager.h"
+#include "../util/basic_macros.h"
+#include "../util/numeric.h"
 
 class MyEventReceiver : public IEventReceiver
 {
@@ -41,8 +46,10 @@ public:
 			return g_menumgr.preprocessEvent(event);
 		}
 
+		switch (event.EventType) {
+
 		// Remember whether each key is down or up
-		if (event.EventType == irr::EET_KEY_INPUT_EVENT) {
+		case irr::EET_KEY_INPUT_EVENT: {
 			const KeyPress &keyCode = event.KeyInput;
 			if (keysListenedFor[keyCode]) {
 				if (event.KeyInput.PressedDown) {
@@ -53,26 +60,28 @@ public:
 				}
 				return true;
 			}
+			break;
 		}
 
 #ifdef HAVE_TOUCHSCREENGUI
 		// case of touchscreengui we have to handle different events
-		if ((m_touchscreengui != 0) &&
-				(event.EventType == irr::EET_TOUCH_INPUT_EVENT)) {
-			m_touchscreengui->translateEvent(event);
-			return true;
+		case irr::EET_TOUCH_INPUT_EVENT: {
+			if (m_touchscreengui != 0) {
+				m_touchscreengui->translateEvent(event);
+				return true;
+			}
+			break;
 		}
 #endif
 
-		if (event.EventType == irr::EET_JOYSTICK_INPUT_EVENT) {
-			/* TODO add a check like:
-			if (event.JoystickEvent != joystick_we_listen_for)
-				return false;
-			*/
-			return joystick->handleEvent(event.JoystickEvent);
+		case irr::EET_JOYSTICK_INPUT_EVENT: {
+			if (event.JoystickEvent.Joystick == joystick_id)
+				return joystick->handleEvent(event.JoystickEvent);
+
+			break;
 		}
-		// handle mouse events
-		if (event.EventType == irr::EET_MOUSE_INPUT_EVENT) {
+
+		case irr::EET_MOUSE_INPUT_EVENT: {
 			if (noMenuActive() == false) {
 				left_active = false;
 				middle_active = false;
@@ -98,7 +107,10 @@ public:
 					mouse_wheel += event.MouseInput.Wheel;
 				}
 			}
-		} else if (event.EventType == irr::EET_LOG_TEXT_EVENT) {
+			break;
+		}
+
+		case irr::EET_LOG_TEXT_EVENT: {
 			static const LogLevel irr_loglev_conv[] = {
 				LL_VERBOSE, // ELL_DEBUG
 				LL_INFO,    // ELL_INFORMATION
@@ -109,9 +121,11 @@ public:
 			assert(event.LogEvent.Level < ARRLEN(irr_loglev_conv));
 			g_logger.log(irr_loglev_conv[event.LogEvent.Level],
 				std::string("Irrlicht: ") + (const char*) event.LogEvent.Text);
+
 			return true;
-		}
-		/* always return false in order to continue processing events */
+		} }
+
+		// Return false to keep processing results
 		return false;
 	}
 
@@ -182,6 +196,7 @@ public:
 	s32 mouse_wheel;
 
 	JoystickController *joystick;
+	int joystick_id = 0;
 
 #ifdef HAVE_TOUCHSCREENGUI
 	TouchScreenGUI* m_touchscreengui;
@@ -201,12 +216,42 @@ private:
 };
 
 
+
+/* This is faster than using getKeySetting with the tradeoff that functions
+ * using it must make sure that it's initialised before using it and there is
+ * no error handling (for example bounds checking). This is really intended for
+ * use only in the main running loop of the client (the_game()) where the faster
+ * (up to 10x faster) key lookup is an asset. Other parts of the codebase
+ * (e.g. formspecs) should continue using getKeySetting().
+ */
+class KeyPress;
+class KeyCache {
+public:
+	KeyCache()
+	{
+		handler = NULL;
+		populate();
+		populate_nonchanging();
+	}
+
+	void populate();
+
+	// Keys that are not settings dependent
+	void populate_nonchanging();
+
+	KeyPress key[KeyType::INTERNAL_ENUM_COUNT];
+	InputHandler *handler;
+};
+
+
+
 /*
 	Separated input handler
 */
 
 class RealInputHandler : public InputHandler
 {
+	KeyCache keycache;
 public:
 	RealInputHandler(IrrlichtDevice *device, MyEventReceiver *receiver):
 		m_device(device),
@@ -214,14 +259,23 @@ public:
 		m_mousepos(0,0)
 	{
 		m_receiver->joystick = &joystick;
+		keycache.handler = this;
+		keycache.populate();
 	}
-	virtual bool isKeyDown(const KeyPress &keyCode)
+	virtual bool isKeyDown(GameKeyType keyCode)
 	{
-		return m_receiver->IsKeyDown(keyCode);
+		return m_receiver->IsKeyDown(keycache.key[keyCode]);
 	}
+
+	// TODO: remove
 	virtual bool wasKeyDown(const KeyPress &keyCode)
 	{
 		return m_receiver->WasKeyDown(keyCode);
+	}
+
+	virtual bool wasKeyDown(GameKeyType keyCode)
+	{
+		return m_receiver->WasKeyDown(keycache.key[keyCode]);
 	}
 	virtual void listenForKey(const KeyPress &keyCode)
 	{
@@ -252,20 +306,20 @@ public:
 
 	virtual bool getLeftState()
 	{
-		return m_receiver->left_active;
+		return m_receiver->left_active || joystick.isKeyDown(KeyType::MOUSE_L);
 	}
 	virtual bool getRightState()
 	{
-		return m_receiver->right_active;
+		return m_receiver->right_active || joystick.isKeyDown(KeyType::MOUSE_R);
 	}
 
 	virtual bool getLeftClicked()
 	{
-		return m_receiver->leftclicked;
+		return m_receiver->leftclicked || joystick.getWasKeyDown(KeyType::MOUSE_L);
 	}
 	virtual bool getRightClicked()
 	{
-		return m_receiver->rightclicked;
+		return m_receiver->rightclicked || joystick.getWasKeyDown(KeyType::MOUSE_R);
 	}
 	virtual void resetLeftClicked()
 	{
@@ -278,7 +332,7 @@ public:
 
 	virtual bool getLeftReleased()
 	{
-		return m_receiver->leftreleased;
+		return m_receiver->leftreleased || joystick.wasKeyReleased(KeyType::MOUSE_L);
 	}
 	virtual bool getRightReleased()
 	{
@@ -298,6 +352,11 @@ public:
 		return m_receiver->getMouseWheel();
 	}
 
+	virtual void notifyKeyConfigChanged()
+	{
+		keycache.populate(); // update the cache with new settings
+	}
+
 	void clear()
 	{
 		joystick.clear();
@@ -311,6 +370,7 @@ private:
 
 class RandomInputHandler : public InputHandler
 {
+	KeyCache keycache;
 public:
 	RandomInputHandler()
 	{
@@ -321,10 +381,17 @@ public:
 		leftreleased = false;
 		rightreleased = false;
 		keydown.clear();
+
+		keycache.handler = this;
+		keycache.populate();
 	}
-	virtual bool isKeyDown(const KeyPress &keyCode)
+	virtual bool isKeyDown(GameKeyType keyCode)
 	{
-		return keydown[keyCode];
+		return keydown[keycache.key[keyCode]];
+	}
+	virtual bool wasKeyDown(GameKeyType keyCode)
+	{
+		return false;
 	}
 	virtual bool wasKeyDown(const KeyPress &keyCode)
 	{
@@ -385,6 +452,11 @@ public:
 	virtual s32 getMouseWheel()
 	{
 		return 0;
+	}
+
+	virtual void notifyKeyConfigChanged()
+	{
+		keycache.populate(); // update the cache with new settings
 	}
 
 	virtual void step(float dtime)
