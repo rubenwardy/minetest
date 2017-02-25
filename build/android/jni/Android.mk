@@ -269,6 +269,7 @@ LOCAL_SRC_FILES := \
 		jni/src/client/clientlauncher.cpp         \
 		jni/src/client/inputhandler.cpp           \
 		jni/src/client/joystick_controller.cpp    \
+		jni/src/client/myeventreceiver.cpp        \
 		jni/src/client/tile.cpp                   \
 		jni/src/irrlicht_changes/static_text.cpp
 

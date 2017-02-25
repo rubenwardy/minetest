@@ -22,199 +22,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "irrlichttypes_extrabloated.h"
 #include "joystick_controller.h"
+#include "myeventreceiver.h"
 #include "../keycode.h"
 #include "../game.h"
 #include "../mainmenumanager.h"
 #include "../util/basic_macros.h"
 #include "../util/numeric.h"
-
-class MyEventReceiver : public IEventReceiver
-{
-public:
-	// This is the one method that we have to implement
-	virtual bool OnEvent(const SEvent& event)
-	{
-		/*
-			React to nothing here if a menu is active
-		*/
-		if (noMenuActive() == false) {
-#ifdef HAVE_TOUCHSCREENGUI
-			if (m_touchscreengui != 0) {
-				m_touchscreengui->Toggle(false);
-			}
-#endif
-			return g_menumgr.preprocessEvent(event);
-		}
-
-		switch (event.EventType) {
-
-		// Remember whether each key is down or up
-		case irr::EET_KEY_INPUT_EVENT: {
-			const KeyPress &keyCode = event.KeyInput;
-			if (keysListenedFor[keyCode]) {
-				if (event.KeyInput.PressedDown) {
-					keyIsDown.set(keyCode);
-					keyWasDown.set(keyCode);
-				} else {
-					keyIsDown.unset(keyCode);
-				}
-				return true;
-			}
-			break;
-		}
-
-#ifdef HAVE_TOUCHSCREENGUI
-		// case of touchscreengui we have to handle different events
-		case irr::EET_TOUCH_INPUT_EVENT: {
-			if (m_touchscreengui != 0) {
-				m_touchscreengui->translateEvent(event);
-				return true;
-			}
-			break;
-		}
-#endif
-
-		case irr::EET_JOYSTICK_INPUT_EVENT: {
-			if (event.JoystickEvent.Joystick == joystick_id)
-				return joystick->handleEvent(event.JoystickEvent);
-
-			break;
-		}
-
-		case irr::EET_MOUSE_INPUT_EVENT: {
-			if (noMenuActive() == false) {
-				left_active = false;
-				middle_active = false;
-				right_active = false;
-			} else {
-				left_active = event.MouseInput.isLeftPressed();
-				middle_active = event.MouseInput.isMiddlePressed();
-				right_active = event.MouseInput.isRightPressed();
-
-				if (event.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN) {
-					leftclicked = true;
-				}
-				if (event.MouseInput.Event == EMIE_RMOUSE_PRESSED_DOWN) {
-					rightclicked = true;
-				}
-				if (event.MouseInput.Event == EMIE_LMOUSE_LEFT_UP) {
-					leftreleased = true;
-				}
-				if (event.MouseInput.Event == EMIE_RMOUSE_LEFT_UP) {
-					rightreleased = true;
-				}
-				if (event.MouseInput.Event == EMIE_MOUSE_WHEEL) {
-					mouse_wheel += event.MouseInput.Wheel;
-				}
-			}
-			break;
-		}
-
-		case irr::EET_LOG_TEXT_EVENT: {
-			static const LogLevel irr_loglev_conv[] = {
-				LL_VERBOSE, // ELL_DEBUG
-				LL_INFO,    // ELL_INFORMATION
-				LL_WARNING, // ELL_WARNING
-				LL_ERROR,   // ELL_ERROR
-				LL_NONE,    // ELL_NONE
-			};
-			assert(event.LogEvent.Level < ARRLEN(irr_loglev_conv));
-			g_logger.log(irr_loglev_conv[event.LogEvent.Level],
-				std::string("Irrlicht: ") + (const char*) event.LogEvent.Text);
-
-			return true;
-		} }
-
-		// Return false to keep processing results
-		return false;
-	}
-
-	bool IsKeyDown(const KeyPress &keyCode) const
-	{
-		return keyIsDown[keyCode];
-	}
-
-	// Checks whether a key was down and resets the state
-	bool WasKeyDown(const KeyPress &keyCode)
-	{
-		bool b = keyWasDown[keyCode];
-		if (b)
-			keyWasDown.unset(keyCode);
-		return b;
-	}
-
-	void listenForKey(const KeyPress &keyCode)
-	{
-		keysListenedFor.set(keyCode);
-	}
-	void dontListenForKeys()
-	{
-		keysListenedFor.clear();
-	}
-
-	s32 getMouseWheel()
-	{
-		s32 a = mouse_wheel;
-		mouse_wheel = 0;
-		return a;
-	}
-
-	void clearInput()
-	{
-		keyIsDown.clear();
-		keyWasDown.clear();
-
-		leftclicked = false;
-		rightclicked = false;
-		leftreleased = false;
-		rightreleased = false;
-
-		left_active = false;
-		middle_active = false;
-		right_active = false;
-
-		mouse_wheel = 0;
-	}
-
-	MyEventReceiver()
-	{
-		clearInput();
-#ifdef HAVE_TOUCHSCREENGUI
-		m_touchscreengui = NULL;
-#endif
-	}
-
-	bool leftclicked;
-	bool rightclicked;
-	bool leftreleased;
-	bool rightreleased;
-
-	bool left_active;
-	bool middle_active;
-	bool right_active;
-
-	s32 mouse_wheel;
-
-	JoystickController *joystick;
-	int joystick_id = 0;
-
-#ifdef HAVE_TOUCHSCREENGUI
-	TouchScreenGUI* m_touchscreengui;
-#endif
-
-private:
-	// The current state of keys
-	KeyList keyIsDown;
-	// Whether a key has been pressed or not
-	KeyList keyWasDown;
-	// List of keys we listen for
-	// TODO perhaps the type of this is not really
-	// performant as KeyList is designed for few but
-	// often changing keys, and keysListenedFor is expected
-	// to change seldomly but contain lots of keys.
-	KeyList keysListenedFor;
-};
-
 
 
 /* This is faster than using getKeySetting with the tradeoff that functions
@@ -264,7 +77,8 @@ public:
 	}
 	virtual bool isKeyDown(GameKeyType keyCode)
 	{
-		return m_receiver->IsKeyDown(keycache.key[keyCode]);
+		return m_receiver->IsKeyDown(keycache.key[keyCode]) ||
+			joystick.isKeyDown(keyCode);
 	}
 
 	// TODO: remove
@@ -275,7 +89,8 @@ public:
 
 	virtual bool wasKeyDown(GameKeyType keyCode)
 	{
-		return m_receiver->WasKeyDown(keycache.key[keyCode]);
+		return m_receiver->WasKeyDown(keycache.key[keyCode]) ||
+			joystick.getWasKeyDown(keyCode);
 	}
 	virtual void listenForKey(const KeyPress &keyCode)
 	{
