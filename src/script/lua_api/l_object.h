@@ -96,6 +96,17 @@ private:
 	// 0 if not applicable to this type of object
 	static int l_get_hp(lua_State *L);
 
+
+	// set_max_hp(self, hp)
+	// hp = number of hitpoints (2 * number of hearts)
+	// returns: nil
+	static int l_set_max_hp(lua_State *L);
+
+	// get_max_hp(self)
+	// returns: maximum number of hitpoints (2 * number of hearts)
+	// 0 if not applicable to this type of object
+	static int l_get_max_hp(lua_State *L);
+
 	// get_inventory(self)
 	static int l_get_inventory(lua_State *L);
 
@@ -331,7 +342,6 @@ private:
 
 	// get_nametag_attributes(self)
 	static int l_get_nametag_attributes(lua_State *L);
-
 };
 
 #endif /* L_OBJECT_H_ */

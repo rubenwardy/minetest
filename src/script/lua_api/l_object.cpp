@@ -300,6 +300,50 @@ int ObjectRef::l_get_hp(lua_State *L)
 	return 1;
 }
 
+// set_max_hp(self, hp)
+// hp = number of hitpoints (2 * number of hearts)
+// returns: nil
+int ObjectRef::l_set_max_hp(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	ObjectRef *ref = checkobject(L, 1);
+	ServerActiveObject *co = getobject(ref);
+	if (co == nullptr)
+		return 0;
+
+	luaL_checknumber(L, 2);
+	int hp = lua_tonumber(L, 2);
+
+	// Do it
+	co->accessObjectProperties()->hp_max = (s16) hp;
+	co->notifyObjectPropertiesModified();
+	if (co->getType() == ACTIVEOBJECT_TYPE_PLAYER)
+		getServer(L)->SendPlayerHPOrDie((PlayerSAO *)co);
+
+	// Return
+	return 0;
+}
+
+// get_max_hp(self)
+// returns: maximum number of hitpoints (2 * number of hearts)
+// 0 if not applicable to this type of object
+int ObjectRef::l_get_max_hp(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	ObjectRef *ref = checkobject(L, 1);
+	ServerActiveObject *co = getobject(ref);
+	if (co == nullptr) {
+		lua_pushnumber(L, 20);
+		return 1;
+	}
+
+	int hp = co->accessObjectProperties()->hp_max;
+	lua_pushnumber(L, hp);
+	return 1;
+}
+
 // get_inventory(self)
 int ObjectRef::l_get_inventory(lua_State *L)
 {
@@ -1929,6 +1973,8 @@ const luaL_Reg ObjectRef::methods[] = {
 	luamethod(ObjectRef, right_click),
 	luamethod(ObjectRef, set_hp),
 	luamethod(ObjectRef, get_hp),
+	luamethod(ObjectRef, set_max_hp),
+	luamethod(ObjectRef, get_max_hp),
 	luamethod(ObjectRef, get_inventory),
 	luamethod(ObjectRef, get_wield_list),
 	luamethod(ObjectRef, get_wield_index),
