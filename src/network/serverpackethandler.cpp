@@ -210,13 +210,9 @@ void Server::handleCommand_Init(NetworkPacket* pkt)
 			<< addr_s << " (peer_id=" << pkt->getPeerId() << ")" << std::endl;
 
 	// Enforce user limit.
-	// Don't enforce for users that have some admin right
-	if (m_clients.getClientIDs(CS_Created).size() >= g_settings->getU16("max_users") &&
-			!checkPriv(playername, "server") &&
-			!checkPriv(playername, "ban") &&
-			!checkPriv(playername, "privs") &&
-			!checkPriv(playername, "password") &&
-			playername != g_settings->get("name")) {
+	if (m_clients.isUserLimitReached() &&
+			playername != g_settings->get("name") &&
+			!m_script->can_bypass_userlimit(playername, addr_s)) {
 		actionstream << "Server: " << playername << " tried to join from "
 				<< addr_s << ", but there" << " are already max_users="
 				<< g_settings->getU16("max_users") << " players." << std::endl;

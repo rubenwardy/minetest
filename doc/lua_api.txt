@@ -2430,6 +2430,20 @@ Call these functions only at load time!
 * `minetest.register_on_item_eat(func(hp_change, replace_with_item, itemstack, user, pointed_thing))`
     * Called when an item is eaten, by `minetest.item_eat`
     * Return `true` or `itemstack` to cancel the default item eat response (i.e.: hp increase)
+<<<<<<< HEAD
+=======
+* `minetest.register_on_priv_grant(function(name, granter, priv))`
+    * Called when `granter` grants the priv `priv` to `name`.
+    * Note that the callback will be called twice if it's done by a player, once with granter being the player name,
+      and again with granter being nil.
+* `minetest.register_on_priv_revoke(function(name, revoker, priv))`
+    * Called when `revoker` revokes the priv `priv` from `name`.
+    * Note that the callback will be called twice if it's done by a player, once with revoker being the player name,
+      and again with revoker being nil.
+* `minetest.register_can_bypass_userlimit(function(name, ip))`
+    * Called when `name` user connects with `ip`.
+    * Return `true` to by pass the player limit
+>>>>>>> 40dd03e3... Implement minetest.register_can_bypass_userlimit (#6369)
 
 ### Other registration functions
 * `minetest.register_chatcommand(cmd, chatcommand definition)`
