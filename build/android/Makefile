@@ -61,6 +61,9 @@ HAVE_LEVELDB = 0
 #COMPILER_VERSION = 4.9
 #HAVE_LEVELDB = 0
 
+NDK_GCC=${NDK_MODULE_PATH}/${TARGET_TOOLCHAIN}${COMPILER_VERSION}/prebuilt/linux-x86_64/bin/${TARGET_TOOLCHAIN}gcc
+NDK_GPP=${NDK_MODULE_PATH}/${TARGET_TOOLCHAIN}${COMPILER_VERSION}/prebuilt/linux-x86_64/bin/${TARGET_TOOLCHAIN}g++
+
 ################################################################################
 ASSETS_TIMESTAMP = deps/assets_timestamp
 
@@ -220,8 +223,8 @@ $(OPENAL_LIB): $(OPENAL_TIMESTAMP)
 	${ANDROID_NDK}/ndk-build NDEBUG=${NDEBUG}                                  \
 		NDK_MODULE_PATH=${NDK_MODULE_PATH} APP_ABI=${TARGET_ABI}               \
 		TARGET_ARCH_ABI=${TARGET_ABI} APP_PLATFORM=${APP_PLATFORM}             \
-		PRIVATE_CC=${NDK_MODULE_PATH}/${TARGET_TOOLCHAIN}${COMPILER_VERSION}/prebuilt/linux-x86_64/bin/${TARGET_TOOLCHAIN}gcc \
-		PRIVATE_CXX=${NDK_MODULE_PATH}/${TARGET_TOOLCHAIN}${COMPILER_VERSION}/prebuilt/linux-x86_64/bin/${TARGET_TOOLCHAIN}g++ \
+		PRIVATE_CC= \
+		PRIVATE_CXX=${NDK_GPP} \
 		TARGET_CFLAGS+="${TARGET_CFLAGS_ADDON}"                                \
 		TARGET_LDFLAGS+="${TARGET_LDFLAGS_ADDON}"                              \
 		TARGET_CXXFLAGS+="${TARGET_CXXFLAGS_ADDON}" || exit 1;                 \
@@ -268,8 +271,8 @@ $(OGG_LIB): $(OGG_TIMESTAMP)
 	${ANDROID_NDK}/ndk-build NDEBUG=${NDEBUG}                                  \
 		NDK_MODULE_PATH=${NDK_MODULE_PATH}                                     \
 		APP_ABI=${TARGET_ABI} APP_PLATFORM=${APP_PLATFORM}                     \
-		PRIVATE_CC=${NDK_MODULE_PATH}/${TARGET_TOOLCHAIN}${COMPILER_VERSION}/prebuilt/linux-x86_64/bin/${TARGET_TOOLCHAIN}gcc \
-		PRIVATE_CXX=${NDK_MODULE_PATH}/${TARGET_TOOLCHAIN}${COMPILER_VERSION}/prebuilt/linux-x86_64/bin/${TARGET_TOOLCHAIN}g++ \
+		PRIVATE_CC=${NDK_GCC} \
+		PRIVATE_CXX=${NDK_GPP} \
 		TARGET_CFLAGS+="${TARGET_CFLAGS_ADDON}"                                \
 		TARGET_LDFLAGS+="${TARGET_LDFLAGS_ADDON}"                              \
 		TARGET_CXXFLAGS+="${TARGET_CXXFLAGS_ADDON}" || exit 1;                 \
@@ -423,8 +426,8 @@ $(FREETYPE_LIB) : $(FREETYPE_TIMESTAMP)
 	${ANDROID_NDK}/ndk-build NDEBUG=${NDEBUG}                                  \
 		NDK_MODULE_PATH=${NDK_MODULE_PATH}                                     \
 		APP_PLATFORM=${APP_PLATFORM} APP_ABI=${TARGET_ABI}                     \
-		PRIVATE_CC=${NDK_MODULE_PATH}/${TARGET_TOOLCHAIN}${COMPILER_VERSION}/prebuilt/linux-x86_64/bin/${TARGET_TOOLCHAIN}gcc \
-		PRIVATE_CXX=${NDK_MODULE_PATH}/${TARGET_TOOLCHAIN}${COMPILER_VERSION}/prebuilt/linux-x86_64/bin/${TARGET_TOOLCHAIN}g++ \
+		PRIVATE_CC=${NDK_GCC} \
+		PRIVATE_CXX=${NDK_GPP} \
 		TARGET_CFLAGS+="${TARGET_CFLAGS_ADDON}"                                \
 		TARGET_LDFLAGS+="${TARGET_LDFLAGS_ADDON}"                              \
 		TARGET_CXXFLAGS+="${TARGET_CXXFLAGS_ADDON}" || exit 1;                 \
@@ -541,8 +544,8 @@ $(IRRLICHT_LIB): $(IRRLICHT_TIMESTAMP) $(FREETYPE_LIB)
 	${ANDROID_NDK}/ndk-build NDEBUG=${NDEBUG}                                  \
 		NDK_MODULE_PATH=${NDK_MODULE_PATH}                                     \
 		APP_ABI=${TARGET_ABI} APP_PLATFORM=${APP_PLATFORM}                     \
-		PRIVATE_CC=${NDK_MODULE_PATH}/${TARGET_TOOLCHAIN}${COMPILER_VERSION}/prebuilt/linux-x86_64/bin/${TARGET_TOOLCHAIN}gcc \
-		PRIVATE_CXX=${NDK_MODULE_PATH}/${TARGET_TOOLCHAIN}${COMPILER_VERSION}/prebuilt/linux-x86_64/bin/${TARGET_TOOLCHAIN}g++ \
+		PRIVATE_CC=${NDK_GCC} \
+		PRIVATE_CXX=${NDK_GPP} \
 		TARGET_CFLAGS+="${TARGET_CFLAGS_ADDON}"                                \
 		TARGET_LDFLAGS+="${TARGET_LDFLAGS_ADDON}"                              \
 		TARGET_CXXFLAGS+="${TARGET_CXXFLAGS_ADDON}" || exit 1;                 \
@@ -770,8 +773,8 @@ apk: local.properties assets $(ICONV_LIB) $(IRRLICHT_LIB) $(CURL_LIB) $(GMP_LIB)
 	+ @${ANDROID_NDK}/ndk-build NDK_MODULE_PATH=${NDK_MODULE_PATH}             \
 		GPROF=${GPROF} APP_ABI=${TARGET_ABI} HAVE_LEVELDB=${HAVE_LEVELDB}      \
 		APP_PLATFORM=${APP_PLATFORM}                                           \
-		PRIVATE_CC=${NDK_MODULE_PATH}/${TARGET_TOOLCHAIN}${COMPILER_VERSION}/prebuilt/linux-x86_64/bin/${TARGET_TOOLCHAIN}gcc \
-		PRIVATE_CXX=${NDK_MODULE_PATH}/${TARGET_TOOLCHAIN}${COMPILER_VERSION}/prebuilt/linux-x86_64/bin/${TARGET_TOOLCHAIN}g++ \
+		PRIVATE_CC=${NDK_GCC} \
+		PRIVATE_CXX=${NDK_GPP} \
 		TARGET_LIBDIR=${TARGET_LIBDIR}                                         \
 		TARGET_CFLAGS+="${TARGET_CFLAGS_ADDON}"                                \
 		TARGET_LDFLAGS+="${TARGET_LDFLAGS_ADDON}"                              \
