@@ -553,12 +553,9 @@ core.registered_craft_predicts, core.register_craft_predict = make_registration(
 core.registered_on_protection_violation, core.register_on_protection_violation = make_registration()
 core.registered_on_item_eats, core.register_on_item_eat = make_registration()
 core.registered_on_punchplayers, core.register_on_punchplayer = make_registration()
-<<<<<<< HEAD
-=======
 core.registered_on_priv_grant, core.register_on_priv_grant = make_registration()
 core.registered_on_priv_revoke, core.register_on_priv_revoke = make_registration()
 core.registered_can_bypass_userlimit, core.register_can_bypass_userlimit = make_registration()
->>>>>>> 40dd03e3... Implement minetest.register_can_bypass_userlimit (#6369)
 
 --
 -- Compatibility for on_mapgen_init()
