@@ -165,7 +165,7 @@ end
 --------------------------------------------------------------------------------
 os.tempfolder = function()
 	if core.settings:get("TMPFolder") then
-		return core.settings:get("TMPFolder") .. DIR_DELIM .. "MT_" .. math.random(0,10000)
+		return core.settings:get("TMPFolder") .. DIR_DELIM .. "MT_" .. math.random(0,10000) .. DIR_DELIM
 	end
 
 	local filetocheck = os.tmpname()
@@ -191,7 +191,7 @@ os.tempfolder = function()
 	local randname = "MTTempModFolder_" .. math.random(0,10000)
 	local backstring = filetocheck:reverse()
 	return filetocheck:sub(0, filetocheck:len() - backstring:find(DIR_DELIM) + 1) ..
-		randname
+		randname .. DIR_DELIM
 end
 
 --------------------------------------------------------------------------------
