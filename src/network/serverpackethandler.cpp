@@ -352,6 +352,20 @@ void Server::handleCommand_RequestMedia(NetworkPacket* pkt)
 				<< name << std::endl;
 	}
 
+	if (true) {
+		errorstream << "Client requested files, but server-sent media is disabled: ";
+		for (auto name : tosend) {
+			errorstream << " " << name;
+		}
+		errorstream << std::endl;
+
+		auto peer_id = pkt->getPeerId();
+		SendAccessDenied(peer_id, SERVER_ACCESSDENIED_CUSTOM_STRING, "Remote media support required. Please update your client.");
+		m_clients.event(peer_id, CSE_SetDenied);
+		DisconnectPeer(pkt->getPeerId());
+		return;
+	}
+
 	sendRequestedMedia(pkt->getPeerId(), tosend);
 }
 
