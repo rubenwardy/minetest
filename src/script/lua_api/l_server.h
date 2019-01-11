@@ -33,6 +33,9 @@ private:
 	// get_server_uptime()
 	static int l_get_server_uptime(lua_State *L);
 
+	// get_stats()
+	static int l_get_stats(lua_State *L);
+
 	// get_worldpath()
 	static int l_get_worldpath(lua_State *L);
 

@@ -200,6 +200,7 @@ public:
 	// Connection must be locked when called
 	std::wstring getStatusString();
 	inline double getUptime() const { return m_uptime.m_value; }
+	inline float getMaxLag() const { return m_env ? m_env->getMaxLagEstimate() : 0; }
 
 	// read shutdown state
 	inline bool isShutdownRequested() const { return m_shutdown_state.is_requested; }
