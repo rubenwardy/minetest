@@ -1,10 +1,12 @@
-##### Issue type
-<!-- Pick one below and delete others -->
- - Bug report
- - Feature request
- - Documentation issue
- - Build issue
- 
+---
+name: Bug report
+about: Create a report to help us improve
+title: ''
+labels: Bug
+assignees: ''
+
+---
+
 ##### Minetest version
 <!--
 Paste Minetest version between quotes below
