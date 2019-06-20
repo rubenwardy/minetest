@@ -1948,6 +1948,8 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
 		return;
 	}
 
+	errorstream << "REGEN" << std::endl;
+
 	parserData mydata;
 
 	//preserve tables
