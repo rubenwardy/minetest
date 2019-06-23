@@ -22,7 +22,7 @@ local function buttonbar_formspec(self)
 		return ""
 	end
 
-	local formspec = string.format("background[%f,%f;%f,%f;%s;false]",
+	local formspec = string.format("background[%f,%f;%f,%f;%s;false;10]",
 			self.pos.x, self.pos.y ,self.size.x, self.size.y + 0.2, defaulttexturedir .. "gui_formbg.png")
 
 	print(formspec)
