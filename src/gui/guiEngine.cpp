@@ -154,12 +154,7 @@ GUIEngine::GUIEngine(JoystickController *joystick,
 	//create topleft header
 	m_toplefttext = L"";
 
-	core::rect<s32> rect(0, 0, g_fontengine->getTextWidth(m_toplefttext.c_str()),
-		g_fontengine->getTextHeight());
-	rect += v2s32(4, 0);
-
-	m_irr_toplefttext = gui::StaticText::add(RenderingEngine::get_gui_env(),
-			m_toplefttext, rect, false, true, 0, -1);
+	updateTopLeftTextSize();
 
 	//create formspecsource
 	m_formspecgui = new FormspecFormSource("");
@@ -178,6 +173,10 @@ GUIEngine::GUIEngine(JoystickController *joystick,
 
 	m_menu->allowClose(false);
 	m_menu->lockSize(true,v2u32(800,600));
+
+	m_sidebar = new GUISidebar(m_texture_source, RenderingEngine::get_gui_env(), m_parent, -1);
+	m_sidebar->setIconPath("/home/ruben/dev/minetest/games/minetest_game/menu/icon.png");
+	m_sidebar->setCallback(std::bind(&GUIEngine::onSidebarClick, this, std::placeholders::_1));
 
 	// Initialize scripting
 
@@ -390,6 +389,11 @@ void GUIEngine::cloudPostProcess()
 	}
 }
 
+void GUIEngine::onSidebarClick(std::string id)
+{
+	errorstream << id << " was clicked!" << std::endl;
+}
+
 /******************************************************************************/
 void GUIEngine::drawBackground(video::IVideoDriver *driver)
 {
@@ -473,15 +477,17 @@ void GUIEngine::drawHeader(video::IVideoDriver *driver)
 
 	if (free_space > splashsize.Y) {
 		core::rect<s32> splashrect(0, 0, splashsize.X, splashsize.Y);
-		splashrect += v2s32((screensize.Width/2)-(splashsize.X/2),
-				((free_space/2)-splashsize.Y/2)+10);
+		int sidebar_w = getSidebarWidth();
+		splashrect += v2s32(sidebar_w + (screensize.Width - sidebar_w)/2-(splashsize.X/2), 24);
 
-	video::SColor bgcolor(255,50,50,50);
+		m_sidebar->setIconHeight(splashrect.getHeight());
 
-	draw2DImageFilterScaled(driver, texture, splashrect,
-		core::rect<s32>(core::position2d<s32>(0,0),
-		core::dimension2di(texture->getOriginalSize())),
-		NULL, NULL, true);
+		video::SColor bgcolor(255,50,50,50);
+
+		draw2DImageFilterScaled(driver, texture, splashrect,
+			core::rect<s32>(core::position2d<s32>(0,0),
+			core::dimension2di(texture->getOriginalSize())),
+			NULL, NULL, true);
 	}
 }
 
@@ -583,13 +589,24 @@ void GUIEngine::setTopleftText(const std::string &text)
 /******************************************************************************/
 void GUIEngine::updateTopLeftTextSize()
 {
-	core::rect<s32> rect(0, 0, g_fontengine->getTextWidth(m_toplefttext.c_str()),
-		g_fontengine->getTextHeight());
-	rect += v2s32(4, 0);
+	if (m_irr_toplefttext) {
+		m_irr_toplefttext->remove();
+		m_irr_toplefttext = nullptr;
+	}
 
-	m_irr_toplefttext->remove();
-	m_irr_toplefttext = gui::StaticText::add(RenderingEngine::get_gui_env(),
-			m_toplefttext, rect, false, true, 0, -1);
+
+	if (m_toplefttext != L"") {
+		auto gui_env = RenderingEngine::get_gui_env();
+		auto text_h = g_fontengine->getTextHeight();
+		auto screen_h = gui_env->getVideoDriver()->getScreenSize().Height;
+
+		core::rect<s32> rect(0, 0, g_fontengine->getTextWidth(m_toplefttext.c_str()),
+				text_h);
+		rect += v2s32(4,  screen_h - text_h - 4);
+
+		m_irr_toplefttext = gui::StaticText::add(gui_env,
+				m_toplefttext, rect, false, true, 0, -1);
+	}
 }
 
 /******************************************************************************/

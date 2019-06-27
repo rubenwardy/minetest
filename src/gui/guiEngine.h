@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irrlichttypes.h"
 #include "modalMenu.h"
 #include "guiFormSpecMenu.h"
+#include "guiSidebar.h"
 #include "client/sound.h"
 #include "client/tile.h"
 #include "util/enriched_string.h"
@@ -208,6 +209,8 @@ private:
 	TextDestGuiEngine       *m_buttonhandler = nullptr;
 	/** the formspec menu */
 	GUIFormSpecMenu         *m_menu = nullptr;
+	/** fancy sidebar */
+	GUISidebar              *m_sidebar = nullptr;
 
 	/** reference to kill variable managed by SIGINT handler */
 	bool                    &m_kill;
@@ -220,6 +223,10 @@ private:
 
 	/** script basefolder */
 	std::string              m_scriptdir = "";
+
+	int getSidebarWidth() const { return (m_sidebar && m_sidebar->isVisible()) ? m_sidebar->getWidth() : 0; }
+
+	void onSidebarClick(std::string id);
 
 	/**
 	 * draw background layer
