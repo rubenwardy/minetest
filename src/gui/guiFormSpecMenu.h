@@ -38,6 +38,7 @@ class InventoryManager;
 class ISimpleTextureSource;
 class Client;
 class GUIScrollBar;
+class GUIScrollContainer;
 
 typedef enum {
 	f_Button,
@@ -304,6 +305,7 @@ protected:
 	std::vector<std::pair<gui::IGUIElement *, TooltipSpec>> m_tooltip_rects;
 	std::vector<std::pair<FieldSpec, GUIScrollBar *>> m_scrollbars;
 	std::vector<std::pair<FieldSpec, std::vector<std::string>>> m_dropdowns;
+	std::vector<std::pair<std::string, GUIScrollContainer *>> m_scroll_containers;
 
 	GUIInventoryList::ItemSpec *m_selected_item = nullptr;
 	u16 m_selected_amount = 0;
@@ -352,6 +354,7 @@ private:
 		std::string focused_fieldname;
 		GUITable::TableOptions table_options;
 		GUITable::TableColumns table_columns;
+		gui::IGUIElement *current_parent;
 
 		GUIInventoryList::Options inventorylist_options;
 
@@ -384,6 +387,8 @@ private:
 	void parseSize(parserData* data, const std::string &element);
 	void parseContainer(parserData* data, const std::string &element);
 	void parseContainerEnd(parserData* data);
+	void parseScrollContainer(parserData *data, const std::string &element);
+	void parseScrollContainerEnd(parserData *data);
 	void parseList(parserData* data, const std::string &element);
 	void parseListRing(parserData* data, const std::string &element);
 	void parseCheckbox(parserData* data, const std::string &element);
