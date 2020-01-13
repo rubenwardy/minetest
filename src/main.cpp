@@ -460,7 +460,6 @@ static bool create_userdata_path()
 	} else {
 		success = true;
 	}
-	porting::copyAssets();
 #else
 	// Create user data directory
 	success = fs::CreateDir(porting::path_user);
