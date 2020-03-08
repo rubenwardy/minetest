@@ -54,29 +54,13 @@ task prepareAssets() {
 
 	copy {
 		from "${projRoot}/minetest.conf.example", "${projRoot}/README.md" into assetsFolder
-	}
-	copy {
 		from "${projRoot}/doc/lgpl-2.1.txt" into "${assetsFolder}"
 		rename("lgpl-2.1.txt", "LICENSE.txt")
-	}
-	copy {
 		from "${projRoot}/builtin" into "${assetsFolder}/builtin"
-	}
-	copy {
 		from "${projRoot}/client/shaders" into "${assetsFolder}/client/shaders"
-	}
-	copy {
 		from "${projRoot}/fonts" include "*.ttf" into "${assetsFolder}/fonts"
-	}
-	copy {
 		from "${projRoot}/games/${gameToCopy}" into "${assetsFolder}/games/${gameToCopy}"
-	}
-	/*copy {
-		// locales broken right now
-		// ToDo: fix it!
-		from "${projRoot}/po" into "${assetsFolder}/po"
-	}*/
-	copy {
+	//	from "${projRoot}/po" into "${assetsFolder}/po" // locales broken right now. ToDo: fix it!
 		from "${projRoot}/textures" into "${assetsFolder}/textures"
 	}
 

@@ -86,15 +86,12 @@ public class UnzipService extends IntentService {
 				mNotifyManager.createNotificationChannel(mChannel);
 			}
 			builder = new Notification.Builder(this, channelId);
-			builder.setContentTitle(getString(R.string.notification_title))
-					.setSmallIcon(R.mipmap.ic_launcher)
-					.setContentText(getString(R.string.notification_description));
 		} else {
 			builder = new Notification.Builder(this);
-			builder.setContentTitle(getString(R.string.notification_title))
-					.setContentText(getString(R.string.notification_description))
-					.setSmallIcon(R.mipmap.ic_launcher);
 		}
+		builder.setContentTitle(getString(R.string.notification_title))
+				.setContentText(getString(R.string.notification_description))
+				.setSmallIcon(R.mipmap.ic_launcher);
 		mNotifyManager.notify(id, builder.build());
 	}
 
