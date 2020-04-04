@@ -1898,18 +1898,22 @@ void GUIFormSpecMenu::parseTabHeader(parserData* data, const std::string &elemen
 		// Width is not here because tabs are the width of the text, and
 		// there's no reason to change that.
 		unsigned int i = 0;
-		std::vector<std::string> v_geom = {"1", "1"}; // Dummy width and height
+
+		// Work out the size, if in real-coordinates mode
 		bool auto_width = true;
+		const auto default_height = std::to_string(2.f * (float)m_btn_height / (float)imgsize.Y);
+		std::vector<std::string> v_geom = {"1", default_height};
 		if (parts.size() == 7) {
 			i++;
 
 			v_geom = split(parts[1], ',');
 			if (v_geom.size() == 1)
-				v_geom.insert(v_geom.begin(), "1"); // Dummy value
+				v_geom.insert(v_geom.begin(), default_height);
 			else
 				auto_width = false;
 		}
 
+		// Read other parameters
 		std::string name = parts[i+1];
 		std::vector<std::string> buttons = split(parts[i+2], ',');
 		std::string str_index = parts[i+3];
@@ -1937,14 +1941,10 @@ void GUIFormSpecMenu::parseTabHeader(parserData* data, const std::string &elemen
 
 		v2s32 pos;
 		v2s32 geom;
-
 		if (data->real_coordinates) {
 			pos = getRealCoordinateBasePos(v_pos);
 
 			geom = getRealCoordinateGeometry(v_geom);
-			// Set default height
-			if (parts.size() == 6)
-				geom.Y = m_btn_height * 2;
 			pos.Y -= geom.Y; // TabHeader base pos is the bottom, not the top.
 			if (auto_width)
 				geom.X = DesiredRect.getWidth(); // Set automatic width
