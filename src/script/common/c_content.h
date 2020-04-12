@@ -113,6 +113,7 @@ void               read_object_properties    (lua_State *L, int index,
                                               ServerActiveObject *sao,
                                               ObjectProperties *prop,
                                               IItemDefManager *idef);
+
 void               push_object_properties    (lua_State *L,
                                               ObjectProperties *prop);
 
@@ -199,3 +200,7 @@ void               push_hud_element          (lua_State *L, HudElement *elem);
 HudElementStat     read_hud_change           (lua_State *L, HudElement *elem, void **value);
 
 void               push_collision_move_result(lua_State *L, const collisionMoveResult &res);
+
+extern struct EnumString es_TileAnimationType[];
+
+extern const std::array<const char *, 31> object_property_keys;

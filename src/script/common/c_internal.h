@@ -114,5 +114,12 @@ void script_error(lua_State *L, int pcall_result, const char *mod, const char *f
 void script_run_callbacks_f(lua_State *L, int nargs,
 	RunCallbacksMode mode, const char *fxn);
 
+/**
+ * Log a deprecation warning to warningstream, or raise a Lua error, based on user settings
+ *
+ * @param L Lua state, used for blaming
+ * @param message Deprecation message
+ * @param stack_depth Which stack frame should be blamed for this issue. -1 to disable.
+ */
 void log_deprecated(lua_State *L, const std::string &message,
 	int stack_depth=1);

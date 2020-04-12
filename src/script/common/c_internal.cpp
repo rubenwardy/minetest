@@ -140,18 +140,23 @@ static void script_log(lua_State *L, const std::string &message,
 {
 	lua_Debug ar;
 
-	log_to << message << " ";
-	if (lua_getstack(L, stack_depth, &ar)) {
-		FATAL_ERROR_IF(!lua_getinfo(L, "Sl", &ar), "lua_getinfo() failed");
-		log_to << "(at " << ar.short_src << ":" << ar.currentline << ")";
-	} else {
-		log_to << "(at ?:?)";
+	log_to << message;
+
+	if (stack_depth >= 0) {
+		log_to << " ";
+		if (lua_getstack(L, stack_depth, &ar)) {
+			FATAL_ERROR_IF(!lua_getinfo(L, "Sl", &ar), "lua_getinfo() failed");
+			log_to << "(at " << ar.short_src << ":" << ar.currentline << ")";
+		} else {
+			log_to << "(at ?:?)";
+		}
 	}
+
 	log_to << std::endl;
 
 	if (do_error)
 		script_error(L, LUA_ERRRUN, NULL, NULL);
-	else
+	else if (stack_depth >= 0)
 		infostream << script_get_backtrace(L) << std::endl;
 }
 
