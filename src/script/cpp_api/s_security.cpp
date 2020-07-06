@@ -55,8 +55,23 @@ static inline void push_original(lua_State *L, const char *lib, const char *func
 	lua_remove(L, -2);  // Remove lib
 }
 
+void ScriptApiSecurity::initializeSecurity(std::unique_ptr<ISecurityPolicy> &&v) {
+	assert(v);
+	policy = std::move(v);
 
-void ScriptApiSecurity::initializeSecurity()
+	lua_State *L = getStack();
+#if INDIRECT_SCRIPTAPI_RIDX
+	*(void **)(lua_newuserdata(L, sizeof(void *))) = policy.get();
+#else
+	lua_pushlightuserdata(L, policy.get());
+#endif
+	lua_rawseti(L, LUA_REGISTRYINDEX, CUSTOM_RIDX_SECURITY_POLICY);
+
+	// TODO: remove
+	initializeServerSecurity();
+}
+
+void ScriptApiSecurity::initializeServerSecurity()
 {
 	static const char *whitelist[] = {
 		"assert",
@@ -451,20 +466,17 @@ bool ScriptApiSecurity::safeLoadFile(lua_State *L, const char *path, const char 
 	return result;
 }
 
-
 bool ScriptApiSecurity::checkPath(lua_State *L, const char *path,
 		bool write_required, bool *write_allowed)
 {
 	if (write_allowed)
 		*write_allowed = false;
 
-	std::string str;  // Transient
-
 	std::string abs_path = fs::AbsolutePath(path);
 
 	if (!abs_path.empty()) {
 		// Don't allow accessing the settings file
-		str = fs::AbsolutePath(g_settings_path);
+		std::string str = fs::AbsolutePath(g_settings_path);
 		if (str == abs_path) return false;
 	}
 
@@ -495,77 +507,16 @@ bool ScriptApiSecurity::checkPath(lua_State *L, const char *path,
 	if (!removed.empty())
 		abs_path += DIR_DELIM + removed;
 
-	// Get server from registry
-	lua_rawgeti(L, LUA_REGISTRYINDEX, CUSTOM_RIDX_SCRIPTAPI);
-	ScriptApiBase *script;
+	lua_rawgeti(L, LUA_REGISTRYINDEX, CUSTOM_RIDX_SECURITY_POLICY);
+	ISecurityPolicy *policy;
 #if INDIRECT_SCRIPTAPI_RIDX
-	script = (ScriptApiBase *) *(void**)(lua_touserdata(L, -1));
+	policy = (ISecurityPolicy *) *(void**)(lua_touserdata(L, -1));
 #else
-	script = (ScriptApiBase *) lua_touserdata(L, -1);
+	policy = (ISecurityPolicy *) lua_touserdata(L, -1);
 #endif
-	lua_pop(L, 1);
-	const IGameDef *gamedef = script->getGameDef();
-	if (!gamedef)
-		return false;
 
-	// Get mod name
-	lua_rawgeti(L, LUA_REGISTRYINDEX, CUSTOM_RIDX_CURRENT_MOD_NAME);
-	if (lua_isstring(L, -1)) {
-		std::string mod_name = readParam<std::string>(L, -1);
-
-		// Builtin can access anything
-		if (mod_name == BUILTIN_MOD_NAME) {
-			if (write_allowed) *write_allowed = true;
-			return true;
-		}
-
-		// Allow paths in mod path
-		// Don't bother if write access isn't important, since it will be handled later
-		if (write_required || write_allowed != NULL) {
-			const ModSpec *mod = gamedef->getModSpec(mod_name);
-			if (mod) {
-				str = fs::AbsolutePath(mod->path);
-				if (!str.empty() && fs::PathStartsWith(abs_path, str)) {
-					if (write_allowed) *write_allowed = true;
-					return true;
-				}
-			}
-		}
-	}
-	lua_pop(L, 1);  // Pop mod name
-
-	// Allow read-only access to all mod directories
-	if (!write_required) {
-		const std::vector<ModSpec> &mods = gamedef->getMods();
-		for (const ModSpec &mod : mods) {
-			str = fs::AbsolutePath(mod.path);
-			if (!str.empty() && fs::PathStartsWith(abs_path, str)) {
-				return true;
-			}
-		}
-	}
-
-	str = fs::AbsolutePath(gamedef->getWorldPath());
-	if (!str.empty()) {
-		// Don't allow access to other paths in the world mod/game path.
-		// These have to be blocked so you can't override a trusted mod
-		// by creating a mod with the same name in a world mod directory.
-		// We add to the absolute path of the world instead of getting
-		// the absolute paths directly because that won't work if they
-		// don't exist.
-		if (fs::PathStartsWith(abs_path, str + DIR_DELIM + "worldmods") ||
-				fs::PathStartsWith(abs_path, str + DIR_DELIM + "game")) {
-			return false;
-		}
-		// Allow all other paths in world path
-		if (fs::PathStartsWith(abs_path, str)) {
-			if (write_allowed) *write_allowed = true;
-			return true;
-		}
-	}
-
-	// Default to disallowing
-	return false;
+	assert(policy);
+	return policy->checkPath(L, abs_path, cur_path, write_required, write_allowed);
 }
 
 

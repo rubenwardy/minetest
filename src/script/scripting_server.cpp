@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include "filesys.h"
 #include "scripting_server.h"
 #include "server.h"
 #include "log.h"
@@ -50,6 +51,94 @@ extern "C" {
 #include "lualib.h"
 }
 
+
+class ServerSecurityPolicy : public ISecurityPolicy, LuaHelper
+{
+public:
+	void initializeEnvironment(lua_State *L) override
+	{
+
+	}
+
+	bool checkPath(lua_State *L, const std::string &abs_path, const std::string &cur_path, bool write_required, bool *write_allowed) override
+	{
+		std::string str;  // Transient
+
+		// Get server from registry
+		lua_rawgeti(L, LUA_REGISTRYINDEX, CUSTOM_RIDX_SCRIPTAPI);
+		ScriptApiBase *script;
+#if INDIRECT_SCRIPTAPI_RIDX
+		script = (ScriptApiBase *) *(void**)(lua_touserdata(L, -1));
+#else
+		script = (ScriptApiBase *) lua_touserdata(L, -1);
+#endif
+		lua_pop(L, 1);
+		const IGameDef *gamedef = script->getGameDef();
+		if (!gamedef)
+			return false;
+
+		// Get mod name
+		lua_rawgeti(L, LUA_REGISTRYINDEX, CUSTOM_RIDX_CURRENT_MOD_NAME);
+		if (lua_isstring(L, -1)) {
+			std::string mod_name = readParam<std::string>(L, -1);
+
+			// Builtin can access anything
+			if (mod_name == BUILTIN_MOD_NAME) {
+				if (write_allowed) *write_allowed = true;
+				return true;
+			}
+
+			// Allow paths in mod path
+			// Don't bother if write access isn't important, since it will be handled later
+			if (write_required || write_allowed != NULL) {
+				const ModSpec *mod = gamedef->getModSpec(mod_name);
+				if (mod) {
+					str = fs::AbsolutePath(mod->path);
+					if (!str.empty() && fs::PathStartsWith(abs_path, str)) {
+						if (write_allowed) *write_allowed = true;
+						return true;
+					}
+				}
+			}
+		}
+		lua_pop(L, 1);  // Pop mod name
+
+		// Allow read-only access to all mod directories
+		if (!write_required) {
+			const std::vector<ModSpec> &mods = gamedef->getMods();
+			for (const ModSpec &mod : mods) {
+				str = fs::AbsolutePath(mod.path);
+				if (!str.empty() && fs::PathStartsWith(abs_path, str)) {
+					return true;
+				}
+			}
+		}
+
+		str = fs::AbsolutePath(gamedef->getWorldPath());
+		if (!str.empty()) {
+			// Don't allow access to other paths in the world mod/game path.
+			// These have to be blocked so you can't override a trusted mod
+			// by creating a mod with the same name in a world mod directory.
+			// We add to the absolute path of the world instead of getting
+			// the absolute paths directly because that won't work if they
+			// don't exist.
+			if (fs::PathStartsWith(abs_path, str + DIR_DELIM + "worldmods") ||
+				fs::PathStartsWith(abs_path, str + DIR_DELIM + "game")) {
+				return false;
+			}
+			// Allow all other paths in world path
+			if (fs::PathStartsWith(abs_path, str)) {
+				if (write_allowed) *write_allowed = true;
+				return true;
+			}
+		}
+
+		// Default to disallowing
+		return false;
+	}
+};
+
+
 ServerScripting::ServerScripting(Server* server):
 		ScriptApiBase(ScriptingType::Server)
 {
@@ -61,7 +150,7 @@ ServerScripting::ServerScripting(Server* server):
 	SCRIPTAPI_PRECHECKHEADER
 
 	if (g_settings->getBool("secure.enable_security")) {
-		initializeSecurity();
+		initializeSecurity(std::unique_ptr<ISecurityPolicy>(new ServerSecurityPolicy()));
 	} else {
 		warningstream << "\\!/ Mod security should never be disabled, as it allows any mod to "
 				<< "access the host machine."

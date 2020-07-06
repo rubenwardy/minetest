@@ -37,16 +37,39 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	}
 
 
+class ISecurityPolicy {
+public:
+	virtual void initializeEnvironment(lua_State* L) = 0;
+
+	/** Check whether Lua can access a path
+	 *
+	 * @param L The lua_State
+	 * @param abs_path The path to check
+	 * @param cur_path The path to check
+	 * @param write_required Whether the caller wants to be able to write.
+	 * @param write_allowed Pointer to return whether write is allowed
+	 * @return Whether this path can be read
+	 */
+	virtual bool checkPath(lua_State *L, const std::string &abs_path, const std::string &cur_path, bool write_required,
+				   bool *write_allowed=NULL) = 0;
+};
+
+
 class ScriptApiSecurity : virtual public ScriptApiBase
 {
+	std::unique_ptr<ISecurityPolicy> policy;
+
 public:
 	int getThread(lua_State *L);
 	// creates an empty Lua environment
 	void createEmptyEnv(lua_State *L);
 	// sets the enviroment to the table thats on top of the stack
 	void setLuaEnv(lua_State *L, int thread);
+
+	void initializeSecurity(std::unique_ptr<ISecurityPolicy> &&policy);
+
 	// Sets up security on the ScriptApi's Lua state
-	void initializeSecurity();
+	void initializeServerSecurity();
 	void initializeSecurityClient();
 	// Checks if the Lua state has been secured
 	static bool isSecure(lua_State *L);
