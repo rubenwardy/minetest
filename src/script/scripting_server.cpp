@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include "util/make_unique.h"
 #include "filesys.h"
 #include "scripting_server.h"
 #include "server.h"
@@ -150,7 +151,7 @@ ServerScripting::ServerScripting(Server* server):
 	SCRIPTAPI_PRECHECKHEADER
 
 	if (g_settings->getBool("secure.enable_security")) {
-		initializeSecurity(std::unique_ptr<ISecurityPolicy>(new ServerSecurityPolicy()));
+		initializeSecurity(std::make_unique<ServerSecurityPolicy>());
 	} else {
 		warningstream << "\\!/ Mod security should never be disabled, as it allows any mod to "
 				<< "access the host machine."
