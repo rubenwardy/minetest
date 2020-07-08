@@ -334,7 +334,7 @@ void set_default_settings(Settings *settings)
 	settings->setDefault("contentdb_flag_blacklist", "nonfree, desktop_default");
 #endif
 
-	settings->setDefault("update_information_url", "https://api.github.com/repos/minetest/minetest/releases/latest");
+	settings->setDefault("update_information_url", "https://www.minetest.net/release_info.json");
 	settings->setDefault("update_last_checked", "");
 #if UPDATE_CHECKER_DEFAULT
 	settings->setDefault("update_last_known", "");

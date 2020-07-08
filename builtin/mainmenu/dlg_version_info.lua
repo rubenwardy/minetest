@@ -1,6 +1,6 @@
 --[[
 Minetest
-Copyright (C) 2018 SmallJoker
+Copyright (C) 2018-2020 SmallJoker
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
@@ -17,9 +17,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ]]
 
+local minetest_url = "https://www.minetest.net/downloads/"
 
 local function version_info_formspec(data)
 	return (
+		"formspec_version[3]" ..
 		"size[9,4.5,true]" ..
 		"textarea[0.5,0.5;8.5,3;;" ..
 		fgettext("New Minetest version is available") .. ";" ..
@@ -27,11 +29,11 @@ local function version_info_formspec(data)
 			"Visit $3 to find out how to get the newest version to stay up to date" ..
 			" with the features and bugfixes.",
 			core.get_version().string, data.new_version,
-			"https://www.minetest.net/downloads/") .. "]" ..
-		"checkbox[1.5,3;version_check_never;" ..
-			fgettext("Never notify me again") .. ";false]" ..
-		"button[1.5,4;2,0.5;version_check_seen;" .. fgettext("OK") .. "]" ..
-		"button[4.5,4;3,0.5;version_check_remind;" .. fgettext("Remind me later") .. "]"
+			minetest_url) .. "]" ..
+		"button[1.5,4;4,0.75;version_check_never;" ..
+			fgettext("Disable all update notifications") .. "]" ..
+		"button[1,3;3,0.75;version_check_visit;" .. fgettext("Visit website") .. "]" ..
+		"button[5,3;3,0.75;version_check_remind;" .. fgettext("Remind me later") .. "]"
 	)
 end
 
@@ -43,11 +45,12 @@ local function version_info_buttonhandler(this, fields)
 		return true
 	end
 	if fields.version_check_never then
-		if core.is_yes(fields.version_check_never) then
-			core.settings:set("update_last_known", "all")
-		end
+		core.settings:set("update_last_known", "all")
+		this:delete()
+		return true
 	end
-	if fields.version_check_seen then
+	if fields.version_check_visit then
+		core.open_url(minetest_url)
 		this:delete()
 		return true
 	end
@@ -69,7 +72,9 @@ function create_version_info_dlg(new_version)
 end
 
 function check_new_version()
-	if core.settings:get("update_last_known") == "all" then
+	local url = core.settings:get("update_information_url")
+	if core.settings:get("update_last_known") == "all" or
+			url == "" then
 		-- Never show any updates
 		return
 	end
@@ -82,33 +87,21 @@ function check_new_version()
 	end
 	core.settings:set("update_last_checked", tostring(time_now))
 
-	local filename = os.tmpname()
-	local get_url = ("%s?proto_version_min=%i&proto_version_max=%i"):format(
-		core.settings:get("update_information_url"),
-		core.get_min_supp_proto(),
-		core.get_max_supp_proto()
-	)
-	if not core.download_file(get_url, filename) then
-		os.remove(filename)
-		return
-	end
+	local http = minetest.get_http_api()
+	local result = http.fetch_sync({url=url})
 
-	local file = io.open(filename, "r")
-	local json = core.parse_json(file:read("*all"))
-	file:close()
-	os.remove(filename)
-
+	local json = result.succeeded and core.parse_json(result.data)
 	if type(json) ~= "table" then
-		core.log("error", "Failed to read JSON output from " ..
-			core.settings:get("update_information_url"))
+		core.log("error", "Failed to read JSON output from " .. url ...
+			", status code = " .. result.code))
 		return
 	end
 
 	local known_update = tonumber(core.settings:get("update_last_known")) or 0
-	local newest_version = json.tag_name or ""
+	local newest_version = json.latest.version
 	local installed_version = core.get_version().string
 
-	-- Ensure it's the identical format
+	-- Expect the format Major.Minor.Patch for both
 	local nv_major, nv_minor, nv_patch = newest_version:match("^(%d+).(%d+).(%d+)")
 	local iv_major, iv_minor, iv_patch = installed_version:match("^(%d+).(%d+).(%d+)")
 	if not nv_patch or not iv_patch then

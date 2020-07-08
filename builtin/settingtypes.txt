@@ -1004,7 +1004,7 @@ client_mapblock_limit (Mapblock limit) int 5000
 show_debug (Show debug info) bool false
 
 #    URL to JSON file which provides information about the newest Minetest release
-update_information_url (Update information URL) string https://api.github.com/repos/minetest/minetest/releases/latest
+update_information_url (Update information URL) string https://www.minetest.net/release_info.json
 
 #    Unix timestamp (integer) of when the client last checked for an update
 #    Set this value to "all" to never check for updates.
