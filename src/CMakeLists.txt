@@ -160,7 +160,7 @@ if(ENABLE_CURSES)
 	if(CURSES_FOUND)
 		set(USE_CURSES TRUE)
 		message(STATUS "ncurses console enabled.")
-		include_directories(${CURSES_INCLUDE_DIRS})
+		include_directories(SYSTEM ${CURSES_INCLUDE_DIRS})
 	else()
 		message(STATUS "ncurses not found!")
 	endif()
@@ -177,7 +177,7 @@ if(ENABLE_POSTGRESQL)
 		message(STATUS "PostgreSQL backend enabled")
 		# This variable is case sensitive, don't try to change it to POSTGRESQL_INCLUDE_DIR
 		message(STATUS "PostgreSQL includes: ${PostgreSQL_INCLUDE_DIRS}")
-		include_directories(${PostgreSQL_INCLUDE_DIRS})
+		include_directories(SYSTEM ${PostgreSQL_INCLUDE_DIRS})
 	else()
 		message(STATUS "PostgreSQL not found!")
 	endif()
@@ -192,7 +192,7 @@ if(ENABLE_LEVELDB)
 	if(LEVELDB_LIBRARY AND LEVELDB_INCLUDE_DIR)
 		set(USE_LEVELDB TRUE)
 		message(STATUS "LevelDB backend enabled.")
-		include_directories(${LEVELDB_INCLUDE_DIR})
+		include_directories(SYSTEM ${LEVELDB_INCLUDE_DIR})
 	else()
 		message(STATUS "LevelDB not found!")
 	endif()
@@ -208,7 +208,7 @@ if(ENABLE_REDIS)
 	if(REDIS_LIBRARY AND REDIS_INCLUDE_DIR)
 		set(USE_REDIS TRUE)
 		message(STATUS "Redis backend enabled.")
-		include_directories(${REDIS_INCLUDE_DIR})
+		include_directories(SYSTEM ${REDIS_INCLUDE_DIR})
 	else(REDIS_LIBRARY AND REDIS_INCLUDE_DIR)
 		message(STATUS "Redis not found!")
 	endif(REDIS_LIBRARY AND REDIS_INCLUDE_DIR)
@@ -227,7 +227,7 @@ if(ENABLE_PROMETHEUS)
 	if(PROMETHEUS_CPP_INCLUDE_DIR AND PROMETHEUS_PULL_LIBRARY AND PROMETHEUS_CORE_LIBRARY)
 		set(PROMETHEUS_LIBRARIES ${PROMETHEUS_PULL_LIBRARY} ${PROMETHEUS_CORE_LIBRARY})
 		set(USE_PROMETHEUS TRUE)
-		include_directories(${PROMETHEUS_CPP_INCLUDE_DIR})
+		include_directories(SYSTEM ${PROMETHEUS_CPP_INCLUDE_DIR})
 	endif(PROMETHEUS_CPP_INCLUDE_DIR AND PROMETHEUS_PULL_LIBRARY AND PROMETHEUS_CORE_LIBRARY)
 endif(ENABLE_PROMETHEUS)
 
@@ -246,7 +246,7 @@ if(ENABLE_SPATIAL)
 	if(SPATIAL_LIBRARY AND SPATIAL_INCLUDE_DIR)
 		set(USE_SPATIAL TRUE)
 		message(STATUS "SpatialIndex AreaStore backend enabled.")
-		include_directories(${SPATIAL_INCLUDE_DIR})
+		include_directories(SYSTEM ${SPATIAL_INCLUDE_DIR})
 	else(SPATIAL_LIBRARY AND SPATIAL_INCLUDE_DIR)
 		message(STATUS "SpatialIndex not found!")
 	endif(SPATIAL_LIBRARY AND SPATIAL_INCLUDE_DIR)
@@ -521,9 +521,8 @@ if (CMAKE_VERSION VERSION_GREATER 3.8.1)
 	source_group(TREE ${PROJECT_SOURCE_DIR} PREFIX "Source Files" FILES ${server_SRCS})
 endif()
 
-include_directories(
-	${PROJECT_BINARY_DIR}
-	${PROJECT_SOURCE_DIR}
+include_directories(${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR})
+include_directories(SYSTEM
 	${IRRLICHT_INCLUDE_DIR}
 	${ZLIB_INCLUDE_DIR}
 	${PNG_INCLUDE_DIR}
@@ -537,15 +536,15 @@ include_directories(
 )
 
 if(USE_GETTEXT)
-	include_directories(${GETTEXT_INCLUDE_DIR})
+	include_directories(SYSTEM ${GETTEXT_INCLUDE_DIR})
 endif()
 
 if(USE_FREETYPE)
-	include_directories(${FREETYPE_INCLUDE_DIRS})
+	include_directories(SYSTEM ${FREETYPE_INCLUDE_DIRS})
 endif()
 
 if(USE_CURL)
-	include_directories(${CURL_INCLUDE_DIR})
+	include_directories(SYSTEM ${CURL_INCLUDE_DIR})
 endif()
 
 
@@ -707,7 +706,7 @@ if(MSVC)
 	if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /arch:SSE")
 	endif()
-	
+
 	if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 		set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/INCREMENTAL:NO /DEBUG /OPT:REF /OPT:ICF")
 	else()
@@ -738,9 +737,14 @@ else()
 		set(WARNING_FLAGS "${WARNING_FLAGS} -Wsign-compare")
 	endif()
 
+	set(WARNING_FLAGS "${WARNING_FLAGS} -Wall -Wextra -Wnon-virtual-dtor -Wnull-dereference -Wno-unused-parameter -Wno-reorder -Wno-sign-compare")
+	if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+		set(WARNING_FLAGS "${WARNING_FLAGS} -Wmisleading-indentation -Wlogical-op")
+	endif()
+
 	if(APPLE AND USE_LUAJIT)
 		# required per http://luajit.org/install.html
-		SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pagezero_size 10000 -image_base 100000000")
+		SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pagezero_size 10000 -image_base 100000000")
 	elseif(UNIX AND USE_LUAJIT)
 		check_c_source_compiles("#ifndef __aarch64__\n#error\n#endif\nint main(){}" IS_AARCH64)
 		if(IS_AARCH64)
@@ -759,7 +763,7 @@ else()
 	# - we don't deal with Inf/NaN or signed zero
 	set(MATH_FLAGS "-fno-math-errno -fno-trapping-math -ffinite-math-only -fno-signed-zeros")
 
-	set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG ${RELEASE_WARNING_FLAGS} ${WARNING_FLAGS} ${OTHER_FLAGS} -Wall -pipe -funroll-loops")
+	set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG ${RELEASE_WARNING_FLAGS} ${WARNING_FLAGS} ${OTHER_FLAGS} -pipe -funroll-loops")
 	if(CMAKE_SYSTEM_NAME MATCHES "(Darwin|BSD|DragonFly)")
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Os")
 	else()
