@@ -179,7 +179,7 @@ void push_item_definition_full(lua_State *L, const ItemDefinition &i)
 }
 
 /******************************************************************************/
-const std::array<const char *, 31> object_property_keys = {
+const std::array<const char *, 32> object_property_keys = {
 	"hp_max",
 	"breath_max",
 	"physical",
@@ -210,6 +210,7 @@ const std::array<const char *, 31> object_property_keys = {
 	"wield_item",
 	"zoom_fov",
 	"use_texture_alpha",
+	"shaded",
 	"damage_texture_modifier"
 };
 
