@@ -107,15 +107,8 @@ local function init_globals()
 		tv_main:set_tab(last_tab)
 	end
 	ui.set_default("maintab")
-	local new_version = check_new_version()
-	if new_version then
-		tv_main:hide()
-		local version_info_dlg = create_version_info_dlg(new_version)
-		version_info_dlg:set_parent(tv_main)
-		version_info_dlg:show()
-	else
-		tv_main:show()
-	end
+	check_new_version()
+	tv_main:show()
 	ui.update()
 
 	core.sound_play("main_menu", true)

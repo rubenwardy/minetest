@@ -71,6 +71,55 @@ function create_version_info_dlg(new_version)
 	return retval
 end
 
+local function get_current_version_code()
+	-- Format: Major.Minor.Patch
+	-- Convert to MMMNNNPPP
+	local cur_string = core.get_version().string
+	local cur_major, cur_minor, cur_patch = cur_string:match("^(%d+).(%d+).(%d+)")
+
+	if not cur_patch then
+		core.log("error", "Failed to read version numbers (invalid tag format?)")
+		return
+	end
+
+	return (cur_major * 1000 + cur_minor) * 1000 + cur_patch
+end
+
+local function on_version_info_received(json)
+	json.latest.version_code = 5005000
+	minetest_url = json.latest.url
+
+	local known_update = tonumber(core.settings:get("update_last_known")) or 0
+
+	-- Format: MMNNPPP (Major, Minor, Patch)
+	local new_number = json.latest.version_code
+	if not new_number then
+		core.log("error", "Failed to read version numbers (invalid tag format?)")
+		return
+	end
+
+	local cur_number = get_current_version_code()
+	if new_number <= known_update or new_number < cur_number then
+		return
+	end
+
+	-- Also consider updating from 1.2.3-dev to 1.2.3
+	if new_number == cur_number and not core.get_version().is_dev then
+		return
+	end
+
+	core.settings:set("update_last_known", tostring(new_number))
+
+	local tabs = ui.find_by_name("maintab")
+	tabs:hide()
+
+	local version_info_dlg = create_version_info_dlg(json.latest.version)
+	version_info_dlg:set_parent(tabs)
+	version_info_dlg:show()
+
+	ui.update()
+end
+
 function check_new_version()
 	local url = core.settings:get("update_information_url")
 	if core.settings:get("update_last_known") == "all" or
@@ -85,42 +134,20 @@ function check_new_version()
 		-- Check interval of 2 entire days
 		return
 	end
+
 	core.settings:set("update_last_checked", tostring(time_now))
 
-	local http = core.get_http_api()
-	local result = http.fetch_sync({url=url})
+	core.handle_async(function(params)
+		local http = core.get_http_api()
+		return http.fetch_sync(params)
+	end, { url = url }, function(result)
+		local json = result.succeeded and core.parse_json(result.data)
+		if type(json) ~= "table" or not json.latest then
+			core.log("error", "Failed to read JSON output from " .. url ..
+					", status code = " .. result.code)
+			return
+		end
 
-	local json = result.succeeded and core.parse_json(result.data)
-	if type(json) ~= "table" or not json.latest then
-		core.log("error", "Failed to read JSON output from " .. url ..
-			", status code = " .. result.code)
-		return
-	end
-
-	local known_update = tonumber(core.settings:get("update_last_known")) or 0
-	-- Format: MMNNPPP (Major, Minor, Patch)
-	local new_number = json.latest.version_code
-	minetest_url = json.latest.url
-
-	-- Format: Major.Minor.Patch
-	-- Convert to MMMNNNPPP
-	local cur_string = core.get_version().string
-	local cur_major, cur_minor, cur_patch = cur_string:match("^(%d+).(%d+).(%d+)")
-
-	if not new_number or not cur_patch then
-		core.log("error", "Failed to read version numbers (invalid tag format?)")
-		return
-	end
-
-	local cur_number = (cur_major * 1000 + cur_minor) * 1000 + cur_patch
-	if new_number <= known_update or new_number < cur_number then
-		return
-	end
-	-- Also consider updating from 1.2.3-dev to 1.2.3
-	if new_number == cur_number and not core.get_version().is_dev then
-		return
-	end
-
-	core.settings:set("update_last_known", tostring(new_number))
-	return json.latest.version
+		on_version_info_received(json)
+	end)
 end
