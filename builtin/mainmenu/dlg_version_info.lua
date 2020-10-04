@@ -17,24 +17,26 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ]]
 
-local minetest_url -- Filled by HTTP callback
-
 local function version_info_formspec(data)
-	return (
-		"formspec_version[3]" ..
-		"size[10,5.5,true]" ..
-		"textarea[0.5,0.5;9.5,3;;" ..
-		core.colorize("#0E0", fgettext("A new Minetest version is available")) .. ";" ..
-		fgettext("Current version: $1\nNew version: $2\n\n" ..
+	local fs = {
+		"formspec_version[3]",
+		"size[10,5.5]",
+		"hypertext[0.375,0.375;9.25,3.75;;",
+		"<tag name=h1 color=#0E0>",
+		"<h1>", fgettext("A new Minetest version is available"), "</h1>\n",
+		fgettext("Current version: $1\nNew version: $2\n" ..
 			"Visit $3 to find out how to get the newest version to stay up to date" ..
 			" with the features and bugfixes.",
-			core.get_version().string, data.new_version,
-			minetest_url) .. "]" ..
-		"button[1.5,3.5;3,0.75;version_check_visit;" .. fgettext("Visit website") .. "]" ..
-		"button[5.5,3.5;3,0.75;version_check_remind;" .. fgettext("Remind me later") .. "]" ..
-		"button[2.5,4.5;5,0.75;version_check_never;" ..
-			fgettext("Disable notifications") .. "]"
-	)
+			core.get_version().string, data.new_version, data.url), "]",
+
+		"container[0.375,4.375]",
+		"button[0,0;2.92,0.75;version_check_visit;", fgettext("Visit website"), "]",
+		"button[3.16,0;2.92,0.75;version_check_remind;", fgettext("Later"), "]",
+		"button[6.33,0;2.92,0.75;version_check_never;", fgettext("Never"), "]",
+		"container_end[]",
+	}
+
+	return table.concat(fs, "")
 end
 
 local function version_info_buttonhandler(this, fields)
@@ -50,7 +52,7 @@ local function version_info_buttonhandler(this, fields)
 		return true
 	end
 	if fields.version_check_visit then
-		core.open_url(minetest_url)
+		core.open_url(this.data.url)
 		this:delete()
 		return true
 	end
@@ -58,15 +60,17 @@ local function version_info_buttonhandler(this, fields)
 	return false
 end
 
-
-function create_version_info_dlg(new_version)
+local function create_version_info_dlg(new_version, url)
 	assert(type(new_version) == "string")
+	assert(type(url) == "string")
 
 	local retval = dialog_create("version_info",
 		version_info_formspec,
 		version_info_buttonhandler,
 		nil)
+
 	retval.data.new_version = new_version
+	retval.data.url = url
 
 	return retval
 end
@@ -86,9 +90,6 @@ local function get_current_version_code()
 end
 
 local function on_version_info_received(json)
-	json.latest.version_code = 5005000
-	minetest_url = json.latest.url
-
 	local known_update = tonumber(core.settings:get("update_last_known")) or 0
 
 	-- Format: MMNNPPP (Major, Minor, Patch)
@@ -113,7 +114,7 @@ local function on_version_info_received(json)
 	local tabs = ui.find_by_name("maintab")
 	tabs:hide()
 
-	local version_info_dlg = create_version_info_dlg(json.latest.version)
+	local version_info_dlg = create_version_info_dlg(json.latest.version, json.latest.url)
 	version_info_dlg:set_parent(tabs)
 	version_info_dlg:show()
 
