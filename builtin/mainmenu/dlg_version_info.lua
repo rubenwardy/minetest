@@ -18,17 +18,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 ]]
 
 local function version_info_formspec(data)
+	local body = {
+		"<tag name=h1 color=#0E0>",
+	"<h1>", fgettext("A new Minetest version is available"), "</h1>\n",
+	fgettext("Current version: $1\nNew version: $2\n" ..
+			"Visit $3 to find out how to get the newest version to stay up to date" ..
+			" with the features and bugfixes.",
+		core.get_version().string, data.new_version, data.url)
+	}
+
 	local fs = {
 		"formspec_version[3]",
 		"size[10,5.5]",
 		"hypertext[0.375,0.375;9.25,3.75;;",
-		"<tag name=h1 color=#0E0>",
-		"<h1>", fgettext("A new Minetest version is available"), "</h1>\n",
-		fgettext("Current version: $1\nNew version: $2\n" ..
-			"Visit $3 to find out how to get the newest version to stay up to date" ..
-			" with the features and bugfixes.",
-			core.get_version().string, data.new_version, data.url), "]",
-
+			core.formspec_escape(table.concat(body, "")), "]",
 		"container[0.375,4.375]",
 		"button[0,0;2.92,0.75;version_check_visit;", fgettext("Visit website"), "]",
 		"button[3.16,0;2.92,0.75;version_check_remind;", fgettext("Later"), "]",
