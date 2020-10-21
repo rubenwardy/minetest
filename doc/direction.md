@@ -2,8 +2,8 @@
 
 ## 1. Background
 
-In order to give context to this document, you should consider reading the
-following resources:
+To give context to this document, you should consider reading the following
+resources:
 
 * celeron55 has published his opinions on the development of Minetest in these places:
   * [What is Minetest?](http://c55.me/blog/?p=1491)
@@ -17,7 +17,7 @@ following resources:
 
 These are the current medium-term goals for Minetest development,
 in no particular order.
-Pull requests that address these goals will be prioritised.
+Pull requests that address these goals are likely to be prioritised.
 
 This roadmap was created after a roadmap brainstorm in a
 [GitHub issue](https://github.com/minetest/minetest/issues/10461).
@@ -41,7 +41,7 @@ which case it may need to be maintained internally or removed.
 
 ### 2.2 Internal code refactoring
 
-In order to ensure sustainable development, Minetest's code needs to be
+To ensure sustainable development, Minetest's code needs to be
 [refactored and improved](https://github.com/minetest/minetest/pulls?q=is%3Aopen+sort%3Aupdated-desc+label%3A%22Code+quality%22+).
 This will remove code rot and allow for more efficient development.
 
