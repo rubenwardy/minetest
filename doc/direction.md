@@ -3,24 +3,24 @@
 ## 1. Background
 
 In order to give context to this document, you should consider reading the
-following resources.
+following resources:
 
 * celeron55 has published his opinions on the development of Minetest in these places:
   * [What is Minetest?](http://c55.me/blog/?p=1491)
   * [celeron55's roadmap](https://forum.minetest.net/viewtopic.php?t=9177)
   * [A clear mission statement for Minetest is missing](https://github.com/minetest/minetest/issues/3476#issuecomment-167399287)
-* Also see the roadmaps and manifestos of core developers on the forums:
-  https://forum.minetest.net/viewforum.php?f=7
+* [Core developer to-do/wish lists](https://forum.minetest.net/viewforum.php?f=7)
+* [Long-term TODO list](https://dev.minetest.net/TODO)
 
 
 ## 2. Roadmap
 
-These are the current medium term goals for Minetest development.
-Pull-requests that address these goals will be prioritised.
+These are the current medium-term goals for Minetest development,
+in no particular order.
+Pull requests that address these goals will be prioritised.
 
 This roadmap was created after a roadmap brainstorm in a
 [GitHub issue](https://github.com/minetest/minetest/issues/10461).
-The goals aren't in any particular order.
 
 ### 2.1 Rendering/Graphics improvements
 
@@ -28,12 +28,13 @@ The implementation of Minetest's renderer is questionable, in terms of
 correctness.
 Work is needed to fix bugs and glitches, such as
 [transparency sorting](https://github.com/minetest/minetest/issues/95).
-There are also performance issues (
-[particles](https://github.com/minetest/minetest/issues/1414#issuecomment-701213269),
+There are also performance issues
+([particles](https://github.com/minetest/minetest/issues/1414),
 [general view distance](https://github.com/minetest/minetest/issues/7222)).
 
-The priority is fixing these issues. Once that is done, fancier features
-can be worked on, such as water shaders, shadows, and improved lighting.
+The priority is fixing the issues and general correctness. Once that is done,
+fancier features can be worked on, such as water shaders, shadows, and
+improved lighting.
 
 Irrlicht may be a limiting factor when it comes to implementing this goal, in
 which case it may need to be maintained internally or removed.
@@ -47,7 +48,7 @@ This will remove code rot and allow for more efficient development.
 ### 2.3 UI Improvements
 
 A [formspec replacement](https://github.com/minetest/minetest/issues/6527) is
-needed, to make GUIs better and easier to create. This replacement could also
+needed to make GUIs better and easier to create. This replacement could also
 be a replacement for HUDs, allowing for a unified API.
 
 A [new mainmenu](https://github.com/minetest/minetest/issues/6733) is needed to
