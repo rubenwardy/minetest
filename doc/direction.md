@@ -52,6 +52,8 @@ be a replacement for HUDs, allowing for a unified API.
 A [new mainmenu](https://github.com/minetest/minetest/issues/6733) is needed to
 improve user experience. First impressions matter, and the current main menu
 doesn't do a very good job at selling Minetest or explaining what it is.
+A new main menu should promote games to users, allowing Minetest Game to no
+longer be bundled by default.
 
 ### 2.4 Object and entity improvements
 
