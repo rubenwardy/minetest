@@ -1,19 +1,16 @@
 # Minetest Direction Document
 
-## 1. Background
+## 1. Long-term Roadmap
 
-To give context to this document, you should consider reading the following
-resources:
+The long-term roadmaps, aims, and guiding philosophies are set out using the
+following documents:
 
-* celeron55 has published his opinions on the development of Minetest in these places:
-  * [What is Minetest?](http://c55.me/blog/?p=1491)
-  * [celeron55's roadmap](https://forum.minetest.net/viewtopic.php?t=9177)
-  * [A clear mission statement for Minetest is missing](https://github.com/minetest/minetest/issues/3476#issuecomment-167399287)
+* [What is Minetest?](http://c55.me/blog/?p=1491)
+* [celeron55's roadmap](https://forum.minetest.net/viewtopic.php?t=9177)
+* [celeron55's comment in "A clear mission statement for Minetest is missing"](https://github.com/minetest/minetest/issues/3476#issuecomment-167399287)
 * [Core developer to-do/wish lists](https://forum.minetest.net/viewforum.php?f=7)
-* [Long-term TODO list](https://dev.minetest.net/TODO)
 
-
-## 2. Roadmap
+## 2. Medium-term Roadmap
 
 These are the current medium-term goals for Minetest development,
 in no particular order.
