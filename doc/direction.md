@@ -12,12 +12,13 @@ following documents:
 
 ## 2. Medium-term Roadmap
 
-These are the current medium-term goals for Minetest development,
-in no particular order.
-Pull requests that address these goals are likely to be prioritised.
+These are the current medium-term goals for Minetest development, in no
+particular order. Pull requests that address one of these goals are likely to be
+prioritised.
 
-This roadmap was created after a roadmap brainstorm in a
-[GitHub issue](https://github.com/minetest/minetest/issues/10461).
+These goals were created from the top points in a
+[roadmap brainstorm](https://github.com/minetest/minetest/issues/10461).
+This should be reviewed approximately yearly, or when goals are achieved.
 
 ### 2.1 Rendering/Graphics improvements
 
