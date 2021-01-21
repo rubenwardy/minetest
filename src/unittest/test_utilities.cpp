@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "test.h"
 
 #include <cmath>
+#include <util/WordWrapper.h>
 #include "util/enriched_string.h"
 #include "util/numeric.h"
 #include "util/string.h"
@@ -56,6 +57,7 @@ public:
 	void testMyround();
 	void testStringJoin();
 	void testEulerConversion();
+	void testWordWrapper();
 };
 
 static TestUtilities g_test_instance;
@@ -87,6 +89,7 @@ void TestUtilities::runTests(IGameDef *gamedef)
 	TEST(testMyround);
 	TEST(testStringJoin);
 	TEST(testEulerConversion);
+	TEST(testWordWrapper);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -528,3 +531,65 @@ void TestUtilities::testEulerConversion()
 	setPitchYawRoll(m2, v2);
 	UASSERT(within(m1, m2, tolL));
 }
+
+void TestUtilities::testWordWrapper()
+{
+	// To make testing easier, this assumes that fonts are 1 pixel monospace.
+	const WordWrapper wrapper([](const std::wstring &str) {
+		return str.size();
+	});
+
+	const core::rect<s32> bounds{ {}, core::dimension2d<s32>(20, 5) };
+	const core::rect<s32> initialLineBounds{ {},  core::dimension2d<s32>(bounds.getSize().Width, 1) };
+
+	std::vector<EnrichedString> result;
+
+	// Test wraps to nearest space
+	EnrichedString testString = L"one two three four five six seven eight nine ten";
+	wrapper.wrap(result, testString, bounds, initialLineBounds);
+	UASSERT(result.size() == 3);
+	UASSERT(result[0].getString() == L"one two three four");
+	UASSERT(result[1].getString() == L"five six seven eight");
+	UASSERT(result[2].getString() == L"nine ten");
+
+	// Test \n \r support
+	result.clear();
+	testString = L"one\ntwo\r\nthree four five six seven";
+	wrapper.wrap(result, testString, bounds, initialLineBounds);
+	UASSERT(result.size() == 4);
+	UASSERT(result[0].getString() == L"one");
+	UASSERT(result[1].getString() == L"two");
+	UASSERT(result[2].getString() == L"three four five six");
+	UASSERT(result[3].getString() == L"seven");
+
+	// Test ellipsis simple
+	result.clear();
+	testString = L"one\ntwo\rthree\nfour\nfive\nsix\nseven";
+	wrapper.wrap(result, testString, bounds, initialLineBounds);
+	UASSERT(result.size() == 5);
+	UASSERT(result[0].getString() == L"one");
+	UASSERT(result[1].getString() == L"two");
+	UASSERT(result[2].getString() == L"three");
+	UASSERT(result[3].getString() == L"four");
+	UASSERT(result[4].getString() == L"five…");
+
+	// Test ellipsis wrapping
+	result.clear();
+	testString = L"one\ntwo\rthree\nfour\nthis is too long for this line";
+	wrapper.wrap(result, testString, bounds, initialLineBounds);
+	UASSERT(result.size() == 5);
+	UASSERT(result[0].getString() == L"one");
+	UASSERT(result[1].getString() == L"two");
+	UASSERT(result[2].getString() == L"three");
+	UASSERT(result[3].getString() == L"four");
+	UASSERT(result[4].getString() == L"this is too long…");
+
+	// Test support for unicode soft hyphen
+	result.clear();
+	testString = L"Hello AReallyLong\u00ADWord";
+	wrapper.wrap(result, testString, bounds, initialLineBounds);
+	UASSERT(result.size() == 2);
+	UASSERT(result[0].getString() == L"Hello AReallyLong-");
+	UASSERT(result[1].getString() == L"Word");
+}
+

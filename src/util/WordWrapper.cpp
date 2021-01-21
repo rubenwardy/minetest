@@ -1,0 +1,116 @@
+#include "WordWrapper.h"
+
+#include <irrlicht/irrString.h>
+
+static const wchar_t SOFT_HYPHEN = 0x00AD;
+
+void WordWrapper::wrap(std::vector<EnrichedString> &wrappedText,
+		const EnrichedString &text, const core::rect<s32> &bounds,
+		core::rect<s32> lineBounds) const
+{
+	s32 elWidth = bounds.getWidth();
+
+	EnrichedString line;
+	EnrichedString word;
+	s32 size = text.size();
+	s32 length = 0;
+	EnrichedString whitespace;
+	s32 lineHeight = lineBounds.getHeight();
+	bool isLastLine = false;
+
+	for (s32 i = 0; i < size; ++i) {
+		wchar_t c = text.getString()[i];
+
+		// New lines
+		if (c == L'\r' || c == L'\n') {
+			if (c == L'\r' && i < size - 1 &&
+					text.getString()[i + 1] == L'\n') {
+				// Skip next char
+				i++;
+			}
+
+			line += whitespace;
+			line += word;
+
+			word.clear();
+			whitespace.clear();
+
+			if (isLastLine) {
+				if (i < size - 1)
+					line.addCharNoColor(L'…');
+				wrappedText.push_back(line);
+				return;
+			}
+
+			wrappedText.push_back(line);
+			line.clear();
+			length = 0;
+
+			lineBounds.UpperLeftCorner.Y += lineHeight;
+			lineBounds.LowerRightCorner.Y += lineHeight;
+			isLastLine = lineBounds.LowerRightCorner.Y + lineHeight >
+				     bounds.LowerRightCorner.Y;
+			if (isLastLine)
+				elWidth -= getTextWidth(L"…");
+
+			continue;
+		}
+
+		bool isWhitespace = c == L' ' || c == 0 || c == SOFT_HYPHEN;
+		if (!isWhitespace)
+			word.addChar(text, i);
+
+		if (!isWhitespace && i != size - 1)
+			continue;
+
+		// Finish word
+		if (!word.empty()) {
+			const s32 whitespaceWidth = getTextWidth(whitespace.getString());
+			const s32 wordWidth = getTextWidth(word.getString());
+
+			if (length > 0 &&
+					length + whitespaceWidth + wordWidth > elWidth) {
+				if (isLastLine) {
+					line.addCharNoColor(L'…');
+					wrappedText.push_back(line);
+					return;
+				}
+
+				if (!whitespace.empty() &&
+						whitespace.getString()[0] == SOFT_HYPHEN)
+					line.addCharNoColor(L'-');
+
+				// break to next line
+				wrappedText.push_back(line);
+				length = wordWidth;
+				line = word;
+
+				lineBounds.UpperLeftCorner.Y += lineHeight;
+				lineBounds.LowerRightCorner.Y += lineHeight;
+				isLastLine = lineBounds.LowerRightCorner.Y + lineHeight >
+					     bounds.LowerRightCorner.Y;
+				if (isLastLine)
+					elWidth -= getTextWidth(L"…");
+			} else {
+				// add word to line
+				line += whitespace;
+				line += word;
+				length += whitespaceWidth + wordWidth;
+			}
+
+			word.clear();
+			whitespace.clear();
+		}
+
+		if (isWhitespace)
+			whitespace.addChar(text, i);
+	}
+
+	if (!word.empty()) {
+		line += whitespace;
+		line += word;
+	}
+
+	if (!line.empty())
+		wrappedText.push_back(line);
+}
