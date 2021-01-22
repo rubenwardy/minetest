@@ -12,13 +12,10 @@
 #include <rect.h>
 #include <SColor.h>
 #include <util/WordWrapper.h>
-#include <cassert>
 
 #if USE_FREETYPE
 	#include "CGUITTFont.h"
 #endif
-
-#include "util/string.h"
 
 namespace irr
 {
@@ -336,12 +333,8 @@ void StaticText::updateText()
 		bounds.LowerRightCorner.X -= skin->getSize(EGDS_TEXT_DISTANCE_X);
 	}
 
-	core::rect<s32> frameRect(AbsoluteRect);
-	if (Border)
-		frameRect.UpperLeftCorner.X += skin->getSize(EGDS_TEXT_DISTANCE_X);
-
 	s32 height_line = font->getDimension(L"A").Height + font->getKerningHeight();
-	core::rect<s32> initialLineBounds = calculateFirstLineRect(frameRect, height_line);
+	core::rect<s32> initialLineBounds = calculateFirstLineRect(bounds, height_line);
 
 	WordWrapper wrapper([&](const std::wstring &str) {
 		return font->getDimension(str.c_str()).Width;
