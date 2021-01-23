@@ -11,7 +11,7 @@
 #include <IVideoDriver.h>
 #include <rect.h>
 #include <SColor.h>
-#include <util/WordWrapper.h>
+#include "util/WordWrapper.h"
 
 #if USE_FREETYPE
 	#include "CGUITTFont.h"
@@ -74,6 +74,7 @@ void StaticText::draw()
 	{
 		skin->draw3DSunkenPane(this, 0, true, false, frameRect, &AbsoluteClippingRect);
 		frameRect.UpperLeftCorner.X += skin->getSize(EGDS_TEXT_DISTANCE_X);
+		frameRect.LowerRightCorner.X -= skin->getSize(EGDS_TEXT_DISTANCE_X);
 	}
 
 	// draw the text
@@ -88,55 +89,56 @@ void StaticText::draw()
 		updateText();
 
 	s32 height_line = font->getDimension(L"A").Height + font->getKerningHeight();
-	core::rect<s32> r = calculateFirstLineRect(frameRect, height_line);
+	core::rect<s32> lineRect = calculateInitialLineRect(frameRect, height_line);
 
 	irr::video::SColor previous_color(255, 255, 255, 255);
 	for (const auto &str : BrokenText) {
-		if (HAlign == EGUIA_LOWERRIGHT) {
-			r.UpperLeftCorner.X = frameRect.LowerRightCorner.X -
+		if (HAlign == EGUIA_LOWERRIGHT)
+			lineRect.UpperLeftCorner.X = frameRect.LowerRightCorner.X -
 				font->getDimension(str.c_str()).Width;
-		}
 
 #if USE_FREETYPE
 		if (font->getType()==irr::gui::EGFT_CUSTOM) {
 			irr::gui::CGUITTFont *tmp = static_cast<irr::gui::CGUITTFont *>(font);
 			tmp->draw(str,
-					  r, previous_color, // FIXME
-					  HAlign==EGUIA_CENTER, VAlign==EGUIA_CENTER,
-					  (RestrainTextInside ? &AbsoluteClippingRect : NULL));
+				lineRect, previous_color, // FIXME
+				HAlign == EGUIA_CENTER, VAlign == EGUIA_CENTER,
+				(RestrainTextInside ? &AbsoluteClippingRect : NULL));
 		} else
 #endif
 		{
 			// Draw non-colored text
 			font->draw(str.c_str(),
-					   r, str.getDefaultColor(), // TODO: Implement colorization
-					   HAlign==EGUIA_CENTER, VAlign==EGUIA_CENTER,
-					   (RestrainTextInside ? &AbsoluteClippingRect : NULL));
+				lineRect, str.getDefaultColor(), // TODO: Implement colorization
+				HAlign==EGUIA_CENTER, VAlign==EGUIA_CENTER,
+				(RestrainTextInside ? &AbsoluteClippingRect : NULL));
 		}
 
-		r.LowerRightCorner.Y += height_line;
-		r.UpperLeftCorner.Y += height_line;
+		lineRect.LowerRightCorner.Y += height_line;
+		lineRect.UpperLeftCorner.Y += height_line;
 	}
 
 	// Draw children
 	IGUIElement::draw();
 }
 
-core::rect<s32> StaticText::calculateFirstLineRect(const core::rect<s32> &frameRect, s32 height_line) const {
-	core::rect<s32> r = frameRect;
-	s32 height_total = height_line*BrokenText.size();
-	if (VAlign== EGUIA_CENTER) {
-		r.UpperLeftCorner.Y = r.getCenter().Y - (height_total/2);
-	} else if (VAlign== EGUIA_LOWERRIGHT) {
-		r.UpperLeftCorner.Y = r.LowerRightCorner.Y - height_total;
+core::rect<s32> StaticText::calculateInitialLineRect(const core::rect<s32> &frameRect, s32 height_line) const {
+	s32 height_total = height_line * BrokenText.size();
+
+	core::rect<s32> lineRect = frameRect;
+	if (VAlign == EGUIA_CENTER) {
+		lineRect.UpperLeftCorner.Y = lineRect.getCenter().Y - (height_total/2);
+	} else if (VAlign == EGUIA_LOWERRIGHT) {
+		lineRect.UpperLeftCorner.Y = lineRect.LowerRightCorner.Y - height_total;
 	}
-	if (HAlign== EGUIA_LOWERRIGHT) {
-		r.UpperLeftCorner.X = r.LowerRightCorner.X -
+
+	if (HAlign == EGUIA_LOWERRIGHT) {
+		lineRect.UpperLeftCorner.X = lineRect.LowerRightCorner.X -
 			getTextWidth();
 	}
 
-	r.LowerRightCorner.Y = r.UpperLeftCorner.Y + height_line;
-	return r;
+	lineRect.LowerRightCorner.Y = lineRect.UpperLeftCorner.Y + height_line;
+	return lineRect;
 }
 
 //! Sets another skin independent font.
@@ -334,7 +336,7 @@ void StaticText::updateText()
 	}
 
 	s32 height_line = font->getDimension(L"A").Height + font->getKerningHeight();
-	core::rect<s32> initialLineBounds = calculateFirstLineRect(bounds, height_line);
+	core::rect<s32> initialLineBounds = calculateInitialLineRect(bounds, height_line);
 
 	WordWrapper wrapper([&](const std::wstring &str) {
 		return font->getDimension(str.c_str()).Width;

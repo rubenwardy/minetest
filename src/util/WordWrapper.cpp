@@ -1,6 +1,6 @@
 #include "WordWrapper.h"
 
-#include <irrlicht/irrString.h>
+#include <irrString.h>
 
 static const wchar_t SOFT_HYPHEN = 0x00AD;
 

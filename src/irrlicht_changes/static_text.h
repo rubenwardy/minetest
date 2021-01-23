@@ -217,7 +217,7 @@ namespace gui
 		EnrichedString ColoredText;
 		std::vector<EnrichedString> BrokenText;
 
-		core::rect<s32> calculateFirstLineRect(const core::rect<s32> &frameRect, s32 height_line) const;
+		core::rect<s32> calculateInitialLineRect(const core::rect<s32> &frameRect, s32 height_line) const;
 	};
 
 

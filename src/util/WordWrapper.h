@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <rect.h>
+
 #include "enriched_string.h"
 #include "irrlichttypes.h"
 
