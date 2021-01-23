@@ -63,7 +63,6 @@ void GameUI::init()
 
 	// Chat text
 	m_guitext_chat = gui::StaticText::add(guienv, L"", core::rect<s32>(0, 0, 0, 0),
-		//false, false); // Disable word wrap as of now
 		false, true, guiroot);
 	u16 chat_font_size = g_settings->getU16("chat_font_size");
 	if (chat_font_size != 0) {

@@ -47,8 +47,6 @@ namespace gui
 		virtual u32 getCursorBlinkTime() const { return 500; }
 
 	protected:
-		//! Breaks the single text line.
-		virtual void breakText();
 		//! sets the area of the given line
 		virtual void setTextRect(s32 line);
 

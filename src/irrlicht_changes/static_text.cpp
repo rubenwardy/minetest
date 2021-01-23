@@ -333,7 +333,7 @@ void StaticText::updateText()
 	WordWrapper wrapper([&](const std::wstring &str) {
 		return font->getDimension(str.c_str()).Width;
 	});
-	wrapper.wrap(BrokenText, cText, bounds, height_line);
+	wrapper.wrap(BrokenText, nullptr, cText, bounds, height_line);
 }
 
 //! Sets the new caption of this element.

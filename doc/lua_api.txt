@@ -1990,7 +1990,7 @@ Some of the values in the key-value store are handled specially:
 
 * `formspec`: Defines a right-click inventory menu. See [Formspec].
 * `infotext`: Text shown on the screen when the node is pointed at.
-              It will word wrap, and truncate with ellipsis after 6 lines.
+              It will word wrap, and truncate with an ellipsis after 6 lines.
 
 Example:
 
