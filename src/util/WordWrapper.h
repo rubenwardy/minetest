@@ -45,12 +45,14 @@ public:
 	 *
 	 * If `text` exceeds the bounds vertically, it will be truncated with an ellipsis.
 	 *
-	 * @param wrappedText Output, should be empty.
+	 * @param output Should be passed empty.
 	 * @param text Text to wrap.
 	 * @param bounds Text target bounds.
-	 * @param lineHeight The height of a line, including spacing.
+	 * @param line_height The height of a line, including spacing.
+	 * @param allow_newlines Whether explicit new lines (\n\r etc) are allowed. If
+	 * not, they will be interpreted as spaces.
 	 */
-	void wrap(std::vector<EnrichedString> &wrappedText, std::vector<s32> *lineStarts,
+	void wrap(std::vector<EnrichedString> &output, std::vector<s32> *line_starts,
 			const EnrichedString &text, const core::rect<s32> &bounds,
-			s32 lineHeight) const;
+			s32 line_height, bool allow_newlines = true) const;
 };

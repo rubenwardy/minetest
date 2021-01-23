@@ -23,96 +23,100 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 static const wchar_t SOFT_HYPHEN = 0x00AD;
 
-void WordWrapper::wrap(std::vector<EnrichedString> &wrappedText,
-		std::vector<s32> *lineStarts, const EnrichedString &text,
-		const core::rect<s32> &bounds, s32 lineHeight) const
+void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *line_starts,
+		const EnrichedString &text, const core::rect<s32> &bounds,
+		s32 line_height, bool allow_newlines) const
 {
 	s32 elWidth = bounds.getWidth();
 
 	EnrichedString line;
 	EnrichedString word;
 	s32 size = text.size();
-	s32 length = 0;
+	s32 line_width = 0;
 	EnrichedString whitespace;
 
-	core::rect<s32> lineBounds = bounds;
-	lineBounds.LowerRightCorner.Y = lineBounds.UpperLeftCorner.Y + lineHeight;
+	core::rect<s32> line_bounds = bounds;
+	line_bounds.LowerRightCorner.Y = line_bounds.UpperLeftCorner.Y + line_height;
 
-	s32 lastLineStart = 0;
-	s32 lastWordStart = 0;
-	bool isLastLine = false;
+	s32 last_line_start = 0;
+	s32 last_word_start = 0;
+	bool is_last_line = false;
 
 	for (s32 i = 0; i < size; ++i) {
 		wchar_t c = text.getString()[i];
 
 		// New lines
 		if (c == L'\r' || c == L'\n') {
-			if (c == L'\r' && i < size - 1 &&
-					text.getString()[i + 1] == L'\n') {
-				// Skip next char
-				i++;
+			if (!allow_newlines) {
+				c = ' ';
+			} else {
+				bool is_crlf = c == L'\r' && i < size - 1 &&
+					       text.getString()[i + 1] == L'\n';
+				if (is_crlf)
+					i++;
+
+				if (line.empty())
+					last_line_start = last_word_start;
+
+				line += whitespace;
+				line += word;
+
+				word.clear();
+				whitespace.clear();
+
+				if (is_last_line) {
+					if (i < size - 1)
+						line.addCharNoColor(L'…');
+					output.push_back(line);
+					if (line_starts)
+						line_starts->push_back(last_line_start);
+					return;
+				}
+
+				output.push_back(line);
+				if (line_starts)
+					line_starts->push_back(last_line_start);
+
+				line.clear();
+				line_width = 0;
+
+				line_bounds.UpperLeftCorner.Y += line_height;
+				line_bounds.LowerRightCorner.Y += line_height;
+				is_last_line = line_bounds.LowerRightCorner.Y +
+							       line_height >
+					       bounds.LowerRightCorner.Y;
+				if (is_last_line)
+					elWidth -= getTextWidth(L"…");
+
+				continue;
 			}
-
-			if (line.empty())
-				lastLineStart = lastWordStart;
-
-			line += whitespace;
-			line += word;
-
-			word.clear();
-			whitespace.clear();
-
-			if (isLastLine) {
-				if (i < size - 1)
-					line.addCharNoColor(L'…');
-				wrappedText.push_back(line);
-				if (lineStarts)
-					lineStarts->push_back(lastLineStart);
-				return;
-			}
-
-			wrappedText.push_back(line);
-			if (lineStarts)
-				lineStarts->push_back(lastLineStart);
-
-			line.clear();
-			length = 0;
-
-			lineBounds.UpperLeftCorner.Y += lineHeight;
-			lineBounds.LowerRightCorner.Y += lineHeight;
-			isLastLine = lineBounds.LowerRightCorner.Y + lineHeight >
-				     bounds.LowerRightCorner.Y;
-			if (isLastLine)
-				elWidth -= getTextWidth(L"…");
-
-			continue;
 		}
 
-		bool isWhitespace = c == L' ' || c == 0 || c == SOFT_HYPHEN;
-		if (!isWhitespace) {
+		bool is_whitespace = c == L' ' || c == 0 || c == SOFT_HYPHEN;
+		if (!is_whitespace) {
 			if (word.empty())
-				lastWordStart = i;
+				last_word_start = i;
 			word.addChar(text, i);
 		}
 
-		if (!isWhitespace && i != size - 1)
+		if (!is_whitespace && i != size - 1)
 			continue;
 
 		// Finish word
 		if (!word.empty()) {
-			const s32 whitespaceWidth = getTextWidth(whitespace.getString());
-			const s32 wordWidth = getTextWidth(word.getString());
+			const s32 whitespace_width = getTextWidth(whitespace.getString());
+			const s32 word_width = getTextWidth(word.getString());
 
 			if (line.empty())
-				lastLineStart = lastWordStart;
+				last_line_start = last_word_start;
 
-			if (length > 0 &&
-					length + whitespaceWidth + wordWidth > elWidth) {
-				if (isLastLine) {
+			if (line_width > 0 && line_width + whitespace_width + word_width >
+							      elWidth) {
+				if (is_last_line) {
 					line.addCharNoColor(L'…');
-					wrappedText.push_back(line);
-					if (lineStarts)
-						lineStarts->push_back(lastLineStart);
+					output.push_back(line);
+					if (line_starts)
+						line_starts->push_back(last_line_start);
 					return;
 				}
 
@@ -121,44 +125,45 @@ void WordWrapper::wrap(std::vector<EnrichedString> &wrappedText,
 					line.addCharNoColor(L'-');
 
 				// break to next line
-				wrappedText.push_back(line);
-				if (lineStarts)
-					lineStarts->push_back(lastLineStart);
-				length = wordWidth;
+				output.push_back(line);
+				if (line_starts)
+					line_starts->push_back(last_line_start);
+				line_width = word_width;
 				line = word;
 
-				lineBounds.UpperLeftCorner.Y += lineHeight;
-				lineBounds.LowerRightCorner.Y += lineHeight;
-				isLastLine = lineBounds.LowerRightCorner.Y + lineHeight >
-					     bounds.LowerRightCorner.Y;
-				if (isLastLine)
+				line_bounds.UpperLeftCorner.Y += line_height;
+				line_bounds.LowerRightCorner.Y += line_height;
+				is_last_line = line_bounds.LowerRightCorner.Y +
+							       line_height >
+					       bounds.LowerRightCorner.Y;
+				if (is_last_line)
 					elWidth -= getTextWidth(L"…");
 			} else {
 				// add word to line
 				line += whitespace;
 				line += word;
-				length += whitespaceWidth + wordWidth;
+				line_width += whitespace_width + word_width;
 			}
 
 			word.clear();
 			whitespace.clear();
 		}
 
-		if (isWhitespace)
+		if (is_whitespace)
 			whitespace.addChar(text, i);
 	}
 
 	if (!word.empty()) {
 		if (line.empty())
-			lastLineStart = lastWordStart;
+			last_line_start = last_word_start;
 
 		line += whitespace;
 		line += word;
 	}
 
 	if (!line.empty()) {
-		wrappedText.push_back(line);
-		if (lineStarts)
-			lineStarts->push_back(lastLineStart);
+		output.push_back(line);
+		if (line_starts)
+			line_starts->push_back(last_line_start);
 	}
 }

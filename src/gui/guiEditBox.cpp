@@ -201,7 +201,8 @@ void GUIEditBox::breakText()
 	});
 	std::vector<EnrichedString> brokenText;
 	wrapper.wrap(brokenText, &m_broken_text_positions,
-			EnrichedString(Text.c_str(), Text.size()), bounds, height_line);
+			EnrichedString(Text.c_str(), Text.size()), bounds, height_line,
+			m_multiline);
 
 	// EditBox expects at least one row
 	if (brokenText.empty()) {
