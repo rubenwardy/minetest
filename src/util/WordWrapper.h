@@ -29,10 +29,8 @@ public:
 	 * @param wrappedText Output, should be empty.
 	 * @param text Text to wrap.
 	 * @param bounds Text target bounds.
-	 * @param initialLineRect Bounds of the initial line of text, relative to
-	 * `bounds`.
+	 * @param lineHeight The height of a line, including spacing.
 	 */
 	void wrap(std::vector<EnrichedString> &wrappedText, const EnrichedString &text,
-			const core::rect<s32> &bounds,
-			core::rect<s32> initialLineRect) const;
+			const core::rect<s32> &bounds, s32 lineHeight) const;
 };

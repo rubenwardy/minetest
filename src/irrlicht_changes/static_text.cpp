@@ -89,7 +89,20 @@ void StaticText::draw()
 		updateText();
 
 	s32 height_line = font->getDimension(L"A").Height + font->getKerningHeight();
-	core::rect<s32> lineRect = calculateInitialLineRect(frameRect, height_line);
+
+	core::rect<s32> lineRect = frameRect;
+
+	s32 height_total = height_line * BrokenText.size();
+	if (VAlign == EGUIA_CENTER)
+		lineRect.UpperLeftCorner.Y = lineRect.getCenter().Y - (height_total/2);
+	else if (VAlign == EGUIA_LOWERRIGHT)
+		lineRect.UpperLeftCorner.Y = lineRect.LowerRightCorner.Y - height_total;
+
+	if (HAlign == EGUIA_LOWERRIGHT)
+		lineRect.UpperLeftCorner.X = lineRect.LowerRightCorner.X -
+			getTextWidth();
+
+	lineRect.LowerRightCorner.Y = lineRect.UpperLeftCorner.Y + height_line;
 
 	irr::video::SColor previous_color(255, 255, 255, 255);
 	for (const auto &str : BrokenText) {
@@ -120,25 +133,6 @@ void StaticText::draw()
 
 	// Draw children
 	IGUIElement::draw();
-}
-
-core::rect<s32> StaticText::calculateInitialLineRect(const core::rect<s32> &frameRect, s32 height_line) const {
-	s32 height_total = height_line * BrokenText.size();
-
-	core::rect<s32> lineRect = frameRect;
-	if (VAlign == EGUIA_CENTER) {
-		lineRect.UpperLeftCorner.Y = lineRect.getCenter().Y - (height_total/2);
-	} else if (VAlign == EGUIA_LOWERRIGHT) {
-		lineRect.UpperLeftCorner.Y = lineRect.LowerRightCorner.Y - height_total;
-	}
-
-	if (HAlign == EGUIA_LOWERRIGHT) {
-		lineRect.UpperLeftCorner.X = lineRect.LowerRightCorner.X -
-			getTextWidth();
-	}
-
-	lineRect.LowerRightCorner.Y = lineRect.UpperLeftCorner.Y + height_line;
-	return lineRect;
 }
 
 //! Sets another skin independent font.
@@ -336,12 +330,10 @@ void StaticText::updateText()
 	}
 
 	s32 height_line = font->getDimension(L"A").Height + font->getKerningHeight();
-	core::rect<s32> initialLineBounds = calculateInitialLineRect(bounds, height_line);
-
 	WordWrapper wrapper([&](const std::wstring &str) {
 		return font->getDimension(str.c_str()).Width;
 	});
-	wrapper.wrap(BrokenText, cText, bounds, initialLineBounds);
+	wrapper.wrap(BrokenText, cText, bounds, height_line);
 }
 
 //! Sets the new caption of this element.

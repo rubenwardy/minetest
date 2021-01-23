@@ -540,13 +540,11 @@ void TestUtilities::testWordWrapper()
 	});
 
 	const core::rect<s32> bounds{ {}, core::dimension2d<s32>(20, 5) };
-	const core::rect<s32> initialLineBounds{ {},  core::dimension2d<s32>(bounds.getSize().Width, 1) };
-
 	std::vector<EnrichedString> result;
 
 	// Test wraps to nearest space
 	EnrichedString testString = L"one two three four five six seven eight nine ten";
-	wrapper.wrap(result, testString, bounds, initialLineBounds);
+	wrapper.wrap(result, testString, bounds, 1);
 	UASSERT(result.size() == 3);
 	UASSERT(result[0].getString() == L"one two three four");
 	UASSERT(result[1].getString() == L"five six seven eight");
@@ -555,7 +553,7 @@ void TestUtilities::testWordWrapper()
 	// Test \n \r support
 	result.clear();
 	testString = L"one\ntwo\r\nthree four five six seven";
-	wrapper.wrap(result, testString, bounds, initialLineBounds);
+	wrapper.wrap(result, testString, bounds, 1);
 	UASSERT(result.size() == 4);
 	UASSERT(result[0].getString() == L"one");
 	UASSERT(result[1].getString() == L"two");
@@ -565,7 +563,7 @@ void TestUtilities::testWordWrapper()
 	// Test ellipsis simple
 	result.clear();
 	testString = L"one\ntwo\rthree\nfour\nfive\nsix\nseven";
-	wrapper.wrap(result, testString, bounds, initialLineBounds);
+	wrapper.wrap(result, testString, bounds, 1);
 	UASSERT(result.size() == 5);
 	UASSERT(result[0].getString() == L"one");
 	UASSERT(result[1].getString() == L"two");
@@ -576,7 +574,7 @@ void TestUtilities::testWordWrapper()
 	// Test ellipsis wrapping
 	result.clear();
 	testString = L"one\ntwo\rthree\nfour\nthis is too long for this line";
-	wrapper.wrap(result, testString, bounds, initialLineBounds);
+	wrapper.wrap(result, testString, bounds, 1);
 	UASSERT(result.size() == 5);
 	UASSERT(result[0].getString() == L"one");
 	UASSERT(result[1].getString() == L"two");
@@ -587,7 +585,7 @@ void TestUtilities::testWordWrapper()
 	// Test support for unicode soft hyphen
 	result.clear();
 	testString = L"Hello AReallyLong\u00ADWord";
-	wrapper.wrap(result, testString, bounds, initialLineBounds);
+	wrapper.wrap(result, testString, bounds, 1);
 	UASSERT(result.size() == 2);
 	UASSERT(result[0].getString() == L"Hello AReallyLong-");
 	UASSERT(result[1].getString() == L"Word");

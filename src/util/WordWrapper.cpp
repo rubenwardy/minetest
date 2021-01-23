@@ -6,7 +6,7 @@ static const wchar_t SOFT_HYPHEN = 0x00AD;
 
 void WordWrapper::wrap(std::vector<EnrichedString> &wrappedText,
 		const EnrichedString &text, const core::rect<s32> &bounds,
-		core::rect<s32> lineBounds) const
+		s32 lineHeight) const
 {
 	s32 elWidth = bounds.getWidth();
 
@@ -15,7 +15,10 @@ void WordWrapper::wrap(std::vector<EnrichedString> &wrappedText,
 	s32 size = text.size();
 	s32 length = 0;
 	EnrichedString whitespace;
-	s32 lineHeight = lineBounds.getHeight();
+
+	core::rect<s32> lineBounds = bounds;
+	lineBounds.LowerRightCorner.Y = lineBounds.UpperLeftCorner.Y + lineHeight;
+
 	bool isLastLine = false;
 
 	for (s32 i = 0; i < size; ++i) {
