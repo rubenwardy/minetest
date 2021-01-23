@@ -547,7 +547,7 @@ void TestUtilities::testWordWrapper()
 		for (size_t line = 0; line < line_starts.size(); line++ ) {     \
 			size_t line_start = line_starts[line];                      \
 			const wchar_t actual = testString.getString()[line_start];  \
-			UASSERTEQ(auto, result[line].getString()[0], actual);       \
+			UASSERTEQ(auto, actual, result[line].getString()[0]);       \
 		}
 
 	// Test wraps to nearest space
@@ -566,13 +566,14 @@ void TestUtilities::testWordWrapper()
 	// Test \n \r support
 	result.clear();
 	line_starts.clear();
-	testString = L"one\ntwo\r\nthree four five six seven";
+	testString = L"one\ntwo this is quite long\r\nthree four five six seven";
 	wrapper.wrap(result, &line_starts, testString, bounds, 1);
-	UASSERT(result.size() == 4);
+	UASSERT(result.size() == 5);
 	UASSERT(result[0].getString() == L"one");
-	UASSERT(result[1].getString() == L"two");
-	UASSERT(result[2].getString() == L"three four five six ");
-	UASSERT(result[3].getString() == L"seven");
+	UASSERT(result[1].getString() == L"two this is quite ");
+	UASSERT(result[2].getString() == L"long");
+	UASSERT(result[3].getString() == L"three four five six ");
+	UASSERT(result[4].getString() == L"seven");
 	CHECK_LINE_STARTS()
 
 	// Test ellipsis simple

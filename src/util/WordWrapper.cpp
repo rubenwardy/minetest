@@ -45,56 +45,19 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 		wchar_t c = text.getString()[i];
 
 		// New lines
+		bool is_newline = false;
 		if (c == L'\r' || c == L'\n') {
-			if (!allow_newlines) {
+			if (allow_newlines)
+				is_newline = true;
+			else
 				c = L' ';
-			} else {
-				bool is_crlf = c == L'\r' && i < size - 1 &&
-					       text.getString()[i + 1] == L'\n';
-				if (is_crlf)
-					i++;
-
-				line += whitespace;
-				line += word;
-
-				word.clear();
-				whitespace.clear();
-
-				if (is_last_line) {
-					if (i < size - 1)
-						line.addCharNoColor(L'…');
-					output.push_back(line);
-					if (line_starts)
-						line_starts->push_back(last_line_start);
-					return;
-				}
-
-				output.push_back(line);
-				if (line_starts)
-					line_starts->push_back(last_line_start);
-				last_line_start = i + 1;
-
-				line.clear();
-				line_width = 0;
-
-				line_bounds.UpperLeftCorner.Y += line_height;
-				line_bounds.LowerRightCorner.Y += line_height;
-				is_last_line = line_bounds.LowerRightCorner.Y +
-							       line_height >
-					       bounds.LowerRightCorner.Y;
-				if (is_last_line)
-					elWidth -= getTextWidth(L"…");
-
-				continue;
-			}
 		}
 
 		bool is_whitespace = c == L' ' || c == 0 || c == SOFT_HYPHEN;
-		if (!is_whitespace) {
+		if (!is_whitespace && !is_newline)
 			word.addChar(text, i);
-		}
 
-		if (!is_whitespace && i != size - 1)
+		if (!is_whitespace && !is_newline && i != size - 1)
 			continue;
 
 		// Finish word
@@ -133,6 +96,9 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 				line_width = word_width;
 				line = word;
 
+				word.clear();
+				whitespace.clear();
+
 				line_bounds.UpperLeftCorner.Y += line_height;
 				line_bounds.LowerRightCorner.Y += line_height;
 				is_last_line = line_bounds.LowerRightCorner.Y +
@@ -140,19 +106,57 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 					       bounds.LowerRightCorner.Y;
 				if (is_last_line)
 					elWidth -= getTextWidth(L"…");
-			} else {
+
+				is_newline = false;
+			} else if (!is_newline) {
 				// add word to line
 				line += whitespace;
 				line += word;
 				line_width += whitespace_width + word_width;
+
+				word.clear();
+				whitespace.clear();
 			}
+		}
+
+		if (is_newline) {
+			if (c == L'\r' && i < size - 1 &&
+				text.getString()[i + 1] == L'\n')
+				i++;
+
+			line += whitespace;
+			line += word;
 
 			word.clear();
 			whitespace.clear();
-		}
 
-		if (is_whitespace)
+			if (is_last_line) {
+				if (i < size - 1)
+					line.addCharNoColor(L'…');
+				output.push_back(line);
+				if (line_starts)
+					line_starts->push_back(last_line_start);
+				return;
+			}
+
+			output.push_back(line);
+			if (line_starts)
+				line_starts->push_back(last_line_start);
+			last_line_start = i + 1;
+
+			line.clear();
+			line_width = 0;
+
+			line_bounds.UpperLeftCorner.Y += line_height;
+			line_bounds.LowerRightCorner.Y += line_height;
+			is_last_line = line_bounds.LowerRightCorner.Y +
+				line_height >
+				bounds.LowerRightCorner.Y;
+			if (is_last_line)
+				elWidth -= getTextWidth(L"…");
+		} else if (is_whitespace) {
 			whitespace.addChar(text, i);
+		}
 	}
 
 	if (!whitespace.empty() || !word.empty()) {
