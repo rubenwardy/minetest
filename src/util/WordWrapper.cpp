@@ -28,39 +28,41 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 		const EnrichedString &text, const core::rect<s32> &bounds,
 		s32 line_height, bool allow_newlines) const
 {
-	/*
-	 * This optimisation problem is solved by attempting to fit as many words into a line at a time.
-	 *
-	 * `line` stores the confirmed words in the current line.
-	 * `whitespace` are the whitespace characters between `line` and `word`.
-	 * `word` is the current non-whitespace characters being accumulated.
-	 *     This may end up on this line, wrapped, or truncated.
-	 */
-
 	s32 avail_width = bounds.getWidth();
 
+	// Ellipsis text
 	const wchar_t *cstr_ellipsis = wgettext("…");
 	const std::wstring ellipsis = cstr_ellipsis;
 	delete[] cstr_ellipsis;
 	s32 ellipsis_width = getTextWidth(ellipsis);
 
+	// Stores the confirmed words in the current line.
 	EnrichedString line;
-	EnrichedString word;
-	s32 size = text.size();
+
+	// The current width of `line` in pixels.
 	s32 line_width = 0;
+
+	// The whitespace characters between `line` and `word`.
 	EnrichedString whitespace;
 
-	core::rect<s32> line_bounds = bounds;
-	line_bounds.LowerRightCorner.Y = line_bounds.UpperLeftCorner.Y + line_height;
+	// The current non-whitespace characters being accumulated.
+	// This may end up on this line, wrapped, or truncated.
+	EnrichedString word;
 
 	// The last starting index of a line, used for `line_starts`.
 	s32 last_line_start = 0;
+
+	// Whether this is the last line that can be rendered in `bounds`.
 	bool is_last_line = false;
+
+	const s32 size = text.size();
+	core::rect<s32> line_bounds = bounds;
+	line_bounds.LowerRightCorner.Y = line_bounds.UpperLeftCorner.Y + line_height;
+
 
 	for (s32 i = 0; i < size; ++i) {
 		wchar_t c = text.getString()[i];
 
-		// New lines
 		bool is_newline = false;
 		if (c == L'\r' || c == L'\n') {
 			if (allow_newlines)
@@ -69,14 +71,13 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 				c = L' ';
 		}
 
-		bool is_whitespace = c == L' ' || c == 0 || c == SOFT_HYPHEN;
+		const bool is_whitespace = c == L' ' || c == 0 || c == SOFT_HYPHEN;
 		if (!is_whitespace && !is_newline)
 			word.addChar(text, i);
-
 		if (!is_whitespace && !is_newline && i != size - 1)
 			continue;
 
-		// Finish word
+		// Handle word finished
 		if (!word.empty()) {
 			const s32 whitespace_width = getTextWidth(whitespace.getString());
 			const s32 word_width = getTextWidth(word.getString());
@@ -135,6 +136,7 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 			}
 		}
 
+		// Handle explicit newline
 		if (is_newline) {
 			bool is_crlf = c == L'\r' && i < size - 1 && text.getString()[i + 1] == L'\n';
 			if (is_crlf)
