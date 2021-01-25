@@ -612,6 +612,7 @@ void TestUtilities::testWordWrapper()
 	UASSERT(result[1].getString() == L"Word");
 	CHECK_LINE_STARTS()
 
+	/*
 	// Test word breaking
 	result.clear();
 	line_starts.clear();
@@ -635,5 +636,6 @@ void TestUtilities::testWordWrapper()
 	UASSERT(result[3].getString() == L"four ");
 	UASSERT(result[4].getString() == L"thisistoolongforthi-");
 	CHECK_LINE_STARTS()
+	*/
 }
 

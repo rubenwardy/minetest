@@ -82,8 +82,7 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 			const s32 whitespace_width = getTextWidth(whitespace.getString());
 			const s32 word_width = getTextWidth(word.getString());
 
-			if (word_width > avail_width) {
-			} else if (line_width > 0 && line_width + whitespace_width + word_width >
+			if (line_width > 0 && line_width + whitespace_width + word_width >
 							      avail_width) {
 				if (is_last_line) {
 					line.addAtEndNoColor(ellipsis);
