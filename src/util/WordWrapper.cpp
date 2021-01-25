@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "WordWrapper.h"
 
 #include <irrString.h>
+#include "gettext.h"
 
 static const wchar_t SOFT_HYPHEN = 0x00AD;
 
@@ -27,9 +28,20 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 		const EnrichedString &text, const core::rect<s32> &bounds,
 		s32 line_height, bool allow_newlines) const
 {
+	/*
+	 * This optimisation problem is solved by attempting to fit as many words into a line at a time.
+	 *
+	 * `line` stores the confirmed words in the current line.
+	 * `whitespace` are the whitespace characters between `line` and `word`.
+	 * `word` is the current non-whitespace characters being accumulated.
+	 *     This may end up on this line, wrapped, or truncated.
+	 */
+
 	s32 avail_width = bounds.getWidth();
 
-	const std::wstring ellipsis = L"…";
+	const wchar_t *cstr_ellipsis = wgettext("…");
+	const std::wstring ellipsis = cstr_ellipsis;
+	delete[] cstr_ellipsis;
 	s32 ellipsis_width = getTextWidth(ellipsis);
 
 	EnrichedString line;
@@ -41,6 +53,7 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 	core::rect<s32> line_bounds = bounds;
 	line_bounds.LowerRightCorner.Y = line_bounds.UpperLeftCorner.Y + line_height;
 
+	// The last starting index of a line, used for `line_starts`.
 	s32 last_line_start = 0;
 	bool is_last_line = false;
 
