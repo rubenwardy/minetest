@@ -611,5 +611,29 @@ void TestUtilities::testWordWrapper()
 	UASSERT(result[0].getString() == L"Hello AReallyLong-");
 	UASSERT(result[1].getString() == L"Word");
 	CHECK_LINE_STARTS()
+
+	// Test word breaking
+	result.clear();
+	line_starts.clear();
+	testString = L"one\nthisistoolongforthisline";
+	wrapper.wrap(result, &line_starts, testString, bounds, 1);
+	UASSERT(result.size() == 3);
+	UASSERT(result[0].getString() == L"one");
+	UASSERT(result[1].getString() == L"thisistoolongforthi-");
+	UASSERT(result[2].getString() == L"sline");
+	CHECK_LINE_STARTS()
+
+	// Test word breaking at end
+	result.clear();
+	line_starts.clear();
+	testString = L"one\ntwo\rthree\nfour thisistoolongforthisline";
+	wrapper.wrap(result, &line_starts, testString, bounds, 1);
+	UASSERT(result.size() == 5);
+	UASSERT(result[0].getString() == L"one");
+	UASSERT(result[1].getString() == L"two");
+	UASSERT(result[2].getString() == L"three");
+	UASSERT(result[3].getString() == L"four ");
+	UASSERT(result[4].getString() == L"thisistoolongforthi-");
+	CHECK_LINE_STARTS()
 }
 
