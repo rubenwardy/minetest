@@ -194,7 +194,7 @@ void GUIEditBox::breakText()
 	s32 elWidth = RelativeRect.getWidth() - m_scrollbar_width - 10;
 	core::rect<s32> bounds = {{}, core::dimension2d<s32>(elWidth, S32_MAX)};
 
-	s32 height_line = font->getDimension(L"A").Height + font->getKerningHeight();
+	s32 height_line = font->getDimension(L"Ay").Height + font->getKerningHeight();
 
 	WordWrapper wrapper([&](const std::wstring &str) {
 		return font->getDimension(str.c_str()).Width;

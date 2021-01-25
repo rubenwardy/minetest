@@ -35,6 +35,7 @@ public:
 	void clear();
 	void operator=(const wchar_t *str);
 	void addAtEnd(const std::wstring &s, const irr::video::SColor &color);
+	void addAtEndNoColor(const std::wstring &s);
 
 	// Adds the character source[i] at the end.
 	// An EnrichedString should always be able to be copied

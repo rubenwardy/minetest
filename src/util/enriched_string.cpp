@@ -127,6 +127,12 @@ void EnrichedString::addAtEnd(const std::wstring &s, const SColor &initial_color
 		m_default_length = m_string.size();
 }
 
+void EnrichedString::addAtEndNoColor(const std::wstring &s)
+{
+	const auto &color = m_colors.empty() ? m_default_color :  m_colors[m_colors.size() - 1];
+	addAtEnd(s, color);
+}
+
 void EnrichedString::addChar(const EnrichedString &source, size_t i)
 {
 	m_string += source.m_string[i];

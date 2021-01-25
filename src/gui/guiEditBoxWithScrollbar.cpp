@@ -438,7 +438,7 @@ void GUIEditBoxWithScrollBar::calculateScrollPos()
 
 	// calculate vertical scrolling
 	if (has_broken_text) {
-		irr::u32 line_height = font->getDimension(L"A").Height + font->getKerningHeight();
+		irr::u32 line_height = font->getDimension(L"Ay").Height + font->getKerningHeight();
 		// only up to 1 line fits?
 		if (line_height >= (irr::u32)m_frame_rect.getHeight()) {
 			m_vscroll_pos = 0;

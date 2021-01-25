@@ -88,7 +88,7 @@ void StaticText::draw()
 	if (font != LastBreakFont)
 		updateText();
 
-	s32 height_line = font->getDimension(L"A").Height + font->getKerningHeight();
+	s32 height_line = font->getDimension(L"Ay").Height + font->getKerningHeight();
 
 	core::rect<s32> lineRect = frameRect;
 

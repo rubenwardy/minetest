@@ -27,7 +27,10 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 		const EnrichedString &text, const core::rect<s32> &bounds,
 		s32 line_height, bool allow_newlines) const
 {
-	s32 elWidth = bounds.getWidth();
+	s32 avail_width = bounds.getWidth();
+
+	const std::wstring ellipsis = L"…";
+	s32 ellipsis_width = getTextWidth(ellipsis);
 
 	EnrichedString line;
 	EnrichedString word;
@@ -66,9 +69,9 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 			const s32 word_width = getTextWidth(word.getString());
 
 			if (line_width > 0 && line_width + whitespace_width + word_width >
-							      elWidth) {
+							      avail_width) {
 				if (is_last_line) {
-					line.addCharNoColor(L'…');
+					line.addAtEndNoColor(ellipsis);
 					output.push_back(line);
 					if (line_starts)
 						line_starts->push_back(last_line_start);
@@ -88,7 +91,7 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 				if (line_starts)
 					line_starts->push_back(last_line_start);
 
-				if (is_whitespace)
+				if (is_whitespace || is_newline)
 					last_line_start = i - (s32)word.size();
 				else
 					last_line_start = i - (s32)word.size() + 1;
@@ -105,7 +108,7 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 							       line_height >
 					       bounds.LowerRightCorner.Y;
 				if (is_last_line)
-					elWidth -= getTextWidth(L"…");
+					avail_width -= ellipsis_width;
 
 				is_newline = false;
 			} else if (!is_newline) {
@@ -120,8 +123,8 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 		}
 
 		if (is_newline) {
-			if (c == L'\r' && i < size - 1 &&
-				text.getString()[i + 1] == L'\n')
+			bool is_crlf = c == L'\r' && i < size - 1 && text.getString()[i + 1] == L'\n';
+			if (is_crlf)
 				i++;
 
 			line += whitespace;
@@ -153,7 +156,7 @@ void WordWrapper::wrap(std::vector<EnrichedString> &output, std::vector<s32> *li
 				line_height >
 				bounds.LowerRightCorner.Y;
 			if (is_last_line)
-				elWidth -= getTextWidth(L"…");
+				avail_width -= getTextWidth(L"…");
 		} else if (is_whitespace) {
 			whitespace.addChar(text, i);
 		}
