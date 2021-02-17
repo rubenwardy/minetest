@@ -302,7 +302,7 @@ void PlayerSAO::step(float dtime, bool send_recommended)
 	sendOutdatedData();
 }
 
-std::string PlayerSAO::generateUpdatePhysicsOverrideCommand()
+std::string PlayerSAO::generateUpdatePhysicsOverrideCommand() const
 {
 	const PhysicsModifier &physics = getEffectivePhysics();
 
@@ -552,29 +552,19 @@ void PlayerSAO::unlinkPlayerSessionAndSave()
 	m_env->removePlayer(m_player);
 }
 
-PlayerSAO::PhysicsModifier PlayerSAO::calculatePhysicsModifier()
+void PlayerSAO::updatePhysicsModifiersTotal()
 {
-	PhysicsModifier result;
+	m_physics_modifiers_total = {};
 
 	for (const auto &pair : m_physics_modifiers)
 		if (pair.second.is_add)
-			pair.second.apply(result);
+			pair.second.apply(m_physics_modifiers_total);
 
 	for (const auto &pair : m_physics_modifiers)
 		if (!pair.second.is_add)
-			pair.second.apply(result);
+			pair.second.apply(m_physics_modifiers_total);
 
-	return result;
-}
-
-const PlayerSAO::PhysicsModifier &PlayerSAO::getTotalPhysicsModifier()
-{
-	if (m_physics_modifier_dirty) {
-		m_physics_modifier = calculatePhysicsModifier();
-		m_physics_modifier_dirty = false;
-	}
-
-	return m_physics_modifier;
+	m_physics_override_sent = false;
 }
 
 std::string PlayerSAO::getPropertyPacket()
@@ -733,18 +723,18 @@ float PlayerSAO::getZoomFOV() const
 void PlayerSAO::setPhysicsModifier(
 		const std::string &key, const PhysicsModifier &modifier)
 {
-	setPhysicsModifiersDirty();
 	m_physics_modifiers[key] = modifier;
+	updatePhysicsModifiersTotal();
 }
 
 void PlayerSAO::deletePhysicsModifier(
 		const std::string &key)
 {
-	setPhysicsModifiersDirty();
 	m_physics_modifiers.erase(key);
+	updatePhysicsModifiersTotal();
 }
 
-const PlayerSAO::PhysicsModifier &PlayerSAO::getEffectivePhysics()
+const PlayerSAO::PhysicsModifier &PlayerSAO::getEffectivePhysics() const
 {
-	return m_physics_override_set ? m_physics_override : getTotalPhysicsModifier();
+	return m_physics_override_set ? m_physics_override : m_physics_modifiers_total;
 }
