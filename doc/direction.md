@@ -27,20 +27,18 @@ See [CONTRIBUTING.md](../.github/CONTRIBUTING.md) for more info.
 
 ### 2.1 Rendering/Graphics improvements
 
-The implementation of Minetest's renderer is questionable, in terms of
-correctness.
-Work is needed to fix bugs and glitches, such as
-[transparency sorting](https://github.com/minetest/minetest/issues/95).
-There are also performance issues
-([particles](https://github.com/minetest/minetest/issues/1414),
-[general view distance](https://github.com/minetest/minetest/issues/7222)).
-
 The priority is fixing the issues and general correctness. Once that is done,
 fancier features can be worked on, such as water shaders, shadows, and
 improved lighting.
 
-Irrlicht may be a limiting factor when it comes to implementing this goal, in
-which case it may need to be maintained internally or removed.
+Examples include
+[transparency sorting](https://github.com/minetest/minetest/issues/95),
+[particle performance](https://github.com/minetest/minetest/issues/1414),
+[general view distance](https://github.com/minetest/minetest/issues/7222).
+
+This includes work on maintaining
+[our Irrlicht fork](https://github.com/minetest/irrlicht), and switching to
+alternative libraries to replace Irrlicht functionality as needed
 
 ### 2.2 Internal code refactoring
 
