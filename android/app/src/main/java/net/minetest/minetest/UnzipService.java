@@ -27,7 +27,10 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Environment;
 import android.widget.Toast;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -61,6 +64,7 @@ public class UnzipService extends IntentService {
 		final File zipName = new File(getCacheDir(), "Minetest.zip");
 		try {
 			copyAsset(zipName.getAbsolutePath());
+			migrate();
 			unzip(zipName);
 		} catch (IOException e) {
 			isSuccess = false;
@@ -71,16 +75,9 @@ public class UnzipService extends IntentService {
 	private void copyAsset(String zipName) throws IOException {
 		String filename = zipName.substring(zipName.lastIndexOf("/") + 1);
 		try (InputStream in = this.getAssets().open(filename);
-			 OutputStream out = new FileOutputStream(zipName)) {
-			copyFile(in, out);
+				OutputStream out = new FileOutputStream(zipName)) {
+			Utils.copyFile(in, out);
 		}
-	}
-
-	private void copyFile(InputStream in, OutputStream out) throws IOException {
-		byte[] buffer = new byte[1024];
-		int read;
-		while ((read = in.read(buffer)) != -1)
-			out.write(buffer, 0, read);
 	}
 
 	private void createNotification() {
@@ -139,6 +136,36 @@ public class UnzipService extends IntentService {
 				zipFile.delete();
 			}
 		}
+	}
+
+	/**
+	 * Migrates user data from deprecated external storage to app scoped storage
+	 */
+	private void migrate() throws IOException {
+		File oldLocation = new File(Environment.getExternalStorageDirectory(), "Minetest");
+		if (!oldLocation.isDirectory())
+			return;
+
+		File newLocation = Utils.getUserDataDirectory(this);
+		if (newLocation == null) {
+			throw new IOException("Unable to find user data directory");
+		}
+
+		for (String dirname : new String[] { "worlds", "games", "mods", "textures", "client" }) {
+			File dir = new File(oldLocation, dirname);
+			if (dir.isDirectory()) {
+				FileUtils.moveDirectoryToDirectory(dir, newLocation, true);
+			}
+		}
+
+		for (String filename : new String[] { "minetest.conf" }) {
+			File file = new File(oldLocation, filename);
+			if (file.isFile()) {
+				FileUtils.moveFileToDirectory(file, newLocation, true);
+			}
+		}
+
+		FileUtils.deleteDirectory(oldLocation);
 	}
 
 	private void publishProgress(int progress) {
