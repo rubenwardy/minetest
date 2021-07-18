@@ -72,7 +72,10 @@ public class UnzipService extends IntentService {
 				throw new IOException("Unable to find user data directory");
 			}
 
-			copyAsset(zipFile.getAbsolutePath());
+			try (InputStream in = this.getAssets().open(zipFile.getName())) {
+				FileUtils.copyToFile(in, zipFile);
+			}
+
 			migrate(userDataDirectory);
 			unzip(zipFile, userDataDirectory);
 		} catch (IOException e) {
@@ -81,14 +84,6 @@ public class UnzipService extends IntentService {
 		} finally {
 			if (zipFile.isFile())
 				zipFile.delete();
-		}
-	}
-
-	private void copyAsset(String zipName) throws IOException {
-		String filename = zipName.substring(zipName.lastIndexOf("/") + 1);
-		try (InputStream in = this.getAssets().open(filename);
-				OutputStream out = new FileOutputStream(zipName)) {
-			Utils.copyFile(in, out);
 		}
 	}
 
