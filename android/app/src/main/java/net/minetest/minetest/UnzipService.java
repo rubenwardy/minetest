@@ -30,6 +30,8 @@ import android.os.Build;
 import android.os.Environment;
 import android.widget.Toast;
 
+import androidx.annotation.StringRes;
+
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -45,9 +47,11 @@ import java.util.zip.ZipInputStream;
 public class UnzipService extends IntentService {
 	public static final String ACTION_UPDATE = "net.minetest.minetest.UPDATE";
 	public static final String ACTION_PROGRESS = "net.minetest.minetest.PROGRESS";
+	public static final String ACTION_PROGRESS_MESSAGE = "net.minetest.minetest.PROGRESS_MESSAGE";
 	public static final String ACTION_FAILURE = "net.minetest.minetest.FAILURE";
 	public static final int SUCCESS = -1;
 	public static final int FAILURE = -2;
+	public static final int INDETERMINATE = -3;
 	private final int id = 1;
 	private NotificationManager mNotifyManager;
 	private boolean isSuccess = true;
@@ -61,14 +65,22 @@ public class UnzipService extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 		createNotification();
 
-		final File zipName = new File(getCacheDir(), "Minetest.zip");
+		final File zipFile = new File(getCacheDir(), "Minetest.zip");
 		try {
-			copyAsset(zipName.getAbsolutePath());
-			migrate();
-			unzip(zipName);
+			File userDataDirectory = Utils.getUserDataDirectory(this);
+			if (userDataDirectory == null) {
+				throw new IOException("Unable to find user data directory");
+			}
+
+			copyAsset(zipFile.getAbsolutePath());
+			migrate(userDataDirectory);
+			unzip(zipFile, userDataDirectory);
 		} catch (IOException e) {
 			isSuccess = false;
 			failureMessage = e.getLocalizedMessage();
+		} finally {
+			if (zipFile.isFile())
+				zipFile.delete();
 		}
 	}
 
@@ -111,9 +123,7 @@ public class UnzipService extends IntentService {
 		mNotifyManager.notify(id, builder.build());
 	}
 
-	private void unzip(File zipFile) throws IOException {
-		File location = Utils.getUserDataDirectory(this);
-
+	private void unzip(File zipFile, File userDataDirectory) throws IOException {
 		int per = 0;
 		int size = getSummarySize(zipFile.getAbsolutePath());
 		int readLen;
@@ -124,16 +134,16 @@ public class UnzipService extends IntentService {
 			while ((ze = zipInputStream.getNextEntry()) != null) {
 				if (ze.isDirectory()) {
 					++per;
-					Utils.createDirs(location, ze.getName());
+					Utils.createDirs(userDataDirectory, ze.getName());
 				} else {
-					publishProgress(100 * ++per / size);
-					try (OutputStream outputStream = new FileOutputStream(new File(location, ze.getName()))) {
+					publishProgress(R.string.loading, 100 * ++per / size);
+					try (OutputStream outputStream = new FileOutputStream(
+							new File(userDataDirectory, ze.getName()))) {
 						while ((readLen = zipInputStream.read(readBuffer)) != -1) {
 							outputStream.write(readBuffer, 0, readLen);
 						}
 					}
 				}
-				zipFile.delete();
 			}
 		}
 	}
@@ -141,26 +151,25 @@ public class UnzipService extends IntentService {
 	/**
 	 * Migrates user data from deprecated external storage to app scoped storage
 	 */
-	private void migrate() throws IOException {
+	private void migrate(File newLocation) throws IOException {
 		File oldLocation = new File(Environment.getExternalStorageDirectory(), "Minetest");
 		if (!oldLocation.isDirectory())
 			return;
 
-		File newLocation = Utils.getUserDataDirectory(this);
-		if (newLocation == null) {
-			throw new IOException("Unable to find user data directory");
-		}
+		publishProgress(R.string.migrating, 0);
 
-		for (String dirname : new String[] { "worlds", "games", "mods", "textures", "client" }) {
-			File dir = new File(oldLocation, dirname);
-			if (dir.isDirectory()) {
+		String[] dirs = new String[] { "worlds", "games", "mods", "textures", "client" };
+		for (int i = 0; i < dirs.length; i++) {
+			publishProgress(R.string.migrating, 100 * i / dirs.length);
+			File dir = new File(oldLocation, dirs[i]);
+			if (dir.isDirectory() && !new File(newLocation, dirs[i]).isDirectory()) {
 				FileUtils.moveDirectoryToDirectory(dir, newLocation, true);
 			}
 		}
 
 		for (String filename : new String[] { "minetest.conf" }) {
 			File file = new File(oldLocation, filename);
-			if (file.isFile()) {
+			if (file.isFile() && !new File(newLocation, filename).isFile()) {
 				FileUtils.moveFileToDirectory(file, newLocation, true);
 			}
 		}
@@ -168,10 +177,12 @@ public class UnzipService extends IntentService {
 		FileUtils.deleteDirectory(oldLocation);
 	}
 
-	private void publishProgress(int progress) {
+	private void publishProgress(@StringRes int message, int progress) {
 		Intent intentUpdate = new Intent(ACTION_UPDATE);
 		intentUpdate.putExtra(ACTION_PROGRESS, progress);
-		if (!isSuccess) intentUpdate.putExtra(ACTION_FAILURE, failureMessage);
+		intentUpdate.putExtra(ACTION_PROGRESS_MESSAGE, message);
+		if (!isSuccess)
+			intentUpdate.putExtra(ACTION_FAILURE, failureMessage);
 		sendBroadcast(intentUpdate);
 	}
 
@@ -190,6 +201,6 @@ public class UnzipService extends IntentService {
 	public void onDestroy() {
 		super.onDestroy();
 		mNotifyManager.cancel(id);
-		publishProgress(isSuccess ? SUCCESS : FAILURE);
+		publishProgress(R.string.loading, isSuccess ? SUCCESS : FAILURE);
 	}
 }
