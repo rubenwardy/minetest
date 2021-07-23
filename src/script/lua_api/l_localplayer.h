@@ -73,6 +73,9 @@ private:
 	// get_pos(self)
 	static int l_get_pos(lua_State *L);
 
+	// set_pos(self, pos)
+	static int l_set_pos(lua_State *L);
+
 	// get_movement_acceleration(self)
 	static int l_get_movement_acceleration(lua_State *L);
 
