@@ -35,9 +35,11 @@ public:
 
 	void testIsDirDelimiter();
 	void testPathStartsWith();
+	void testSplitPath();
 	void testRemoveLastPathComponent();
 	void testRemoveLastPathComponentWithTrailingDelimiter();
 	void testRemoveRelativePathComponent();
+	void testRelativePath();
 };
 
 static TestFilePath g_test_instance;
@@ -46,9 +48,11 @@ void TestFilePath::runTests(IGameDef *gamedef)
 {
 	TEST(testIsDirDelimiter);
 	TEST(testPathStartsWith);
+	TEST(testSplitPath);
 	TEST(testRemoveLastPathComponent);
 	TEST(testRemoveLastPathComponentWithTrailingDelimiter);
 	TEST(testRemoveRelativePathComponent);
+	TEST(testRelativePath);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -163,6 +167,24 @@ void TestFilePath::testPathStartsWith()
 }
 
 
+void TestFilePath::testSplitPath()
+{
+	auto result = fs::SplitPath("/home/one/two/three");
+	UASSERT(result[0] == "");
+	UASSERT(result[1] == "home");
+	UASSERT(result[2] == "one");
+	UASSERT(result[3] == "two");
+	UASSERT(result[4] == "three");
+
+	result = fs::SplitPath("c:\\Users\\one\\two/three");
+	UASSERT(result[0] == "c:");
+	UASSERT(result[1] == "Users");
+	UASSERT(result[2] == "one");
+	UASSERT(result[3] == "two");
+	UASSERT(result[4] == "three");
+}
+
+
 void TestFilePath::testRemoveLastPathComponent()
 {
 	std::string path, result, removed;
@@ -261,4 +283,36 @@ void TestFilePath::testRemoveRelativePathComponent()
 	path = p("/a/b/c/.././../d/../e/f/g/../h/i/j/../../../..");
 	result = fs::RemoveRelativePathComponents(path);
 	UASSERT(result == p("/a/e"));
+}
+
+
+void TestFilePath::testRelativePath()
+{
+	// No trailing
+
+	auto result = fs::RelativePath("/home/one/two/three", "/home/one");
+	UASSERT(result == "two" DIR_DELIM "three");
+
+	result = fs::RelativePath("/home/three", "/home/one");
+	UASSERT(result == ".." DIR_DELIM "three");
+
+	result = fs::RelativePath("c:\\Users\\ruben\\two\\three", "c:\\Users\\ruben");
+	UASSERT(result == "two" DIR_DELIM "three");
+
+	result = fs::RelativePath("c:\\Users\\three", "c:\\Users\\ruben");
+	UASSERT(result == ".." DIR_DELIM "three");
+
+	// With trailing
+
+	result = fs::RelativePath("/home/one/two/three/", "/home/one/");
+	UASSERT(result == "two" DIR_DELIM "three");
+
+	result = fs::RelativePath("/home/three", "/home/one/");
+	UASSERT(result == ".." DIR_DELIM "three");
+
+	result = fs::RelativePath("c:\\Users\\ruben\\two\\three\\", "c:\\Users\\ruben\\");
+	UASSERT(result == "two" DIR_DELIM "three");
+
+	result = fs::RelativePath("c:\\Users\\three\\", "c:\\Users\\ruben\\");
+	UASSERT(result == ".." DIR_DELIM "three");
 }

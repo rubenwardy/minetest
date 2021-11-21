@@ -115,6 +115,14 @@ bool MoveDir(const std::string &source, const std::string &target);
 // Ignores case differences and '/' vs. '\\' on Windows
 bool PathStartsWith(const std::string &path, const std::string &prefix);
 
+/**
+ * Returns path components, accepting any directory deliminator
+ *
+ * @param path
+ * @return
+ */
+std::vector<std::string> SplitPath(const std::string &path);
+
 // Remove last path component and the dir delimiter before and/or after it,
 // returns "" if there is only one path component.
 // removed: If non-NULL, receives the removed component(s).
@@ -130,6 +138,15 @@ std::string RemoveRelativePathComponents(std::string path);
 // Returns the absolute path for the passed path, with "." and ".." path
 // components and symlinks removed.  Returns "" on error.
 std::string AbsolutePath(const std::string &path);
+
+/**
+ * Returns a path relative to a given base path `relativeTo`.
+ *
+ * @param path
+ * @param relativeTo
+ * @return
+ */
+std::string RelativePath(const std::string &path, const std::string &relativeTo);
 
 // Returns the filename from a path or the entire path if no directory
 // delimiter is found.

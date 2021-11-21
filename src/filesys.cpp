@@ -633,6 +633,25 @@ bool PathStartsWith(const std::string &path, const std::string &prefix)
 	}
 }
 
+std::vector<std::string> SplitPath(const std::string &path)
+{
+	size_t i = 0;
+	std::vector<std::string> retval;
+
+	while (i < path.length()) {
+		size_t idx = path.find_first_of("\\/", i);
+		if (idx == std::string::npos) {
+			retval.emplace_back(path.substr(i, path.length() - idx));
+			break;
+		}
+
+		retval.emplace_back(path.substr(i, idx - i));
+		i = idx + 1;
+	}
+
+	return retval;
+}
+
 std::string RemoveLastPathComponent(const std::string &path,
 		std::string *removed, int count)
 {
@@ -729,6 +748,38 @@ std::string AbsolutePath(const std::string &path)
 	std::string abs_path_str(abs_path);
 	free(abs_path);
 	return abs_path_str;
+}
+
+std::string RelativePath(const std::string &path, const std::string &relativeTo)
+{
+	// Paths must be absolute already
+	assert(path.find("..") == std::string::npos);
+	assert(relativeTo.find("..") == std::string::npos);
+
+	const auto pathComponents = SplitPath(path);
+	const auto baseComponents = SplitPath(relativeTo);
+	std::string retval;
+
+	size_t i = 0;
+	size_t j = 0;
+	while (i < pathComponents.size() && j < baseComponents.size() && pathComponents[i] == baseComponents[j]) {
+		i++;
+		j++;
+	}
+
+	while (j < baseComponents.size()) {
+		retval += ".." DIR_DELIM;
+		j++;
+	}
+
+	while (i < pathComponents.size()) {
+		retval += pathComponents[i];
+		if (i != pathComponents.size() - 1)
+			retval += DIR_DELIM;
+		i++;
+	}
+
+	return retval;
 }
 
 const char *GetFilenameFromPath(const char *path)
@@ -875,4 +926,3 @@ bool Rename(const std::string &from, const std::string &to)
 }
 
 } // namespace fs
-
