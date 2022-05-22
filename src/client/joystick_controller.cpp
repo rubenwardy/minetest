@@ -227,6 +227,7 @@ void JoystickController::onJoystickConnect(const std::vector<irr::SJoystickInfo>
 			setLayoutFromControllerName(joystick_infos[id].Name.c_str());
 		else
 			setLayoutFromControllerName(layout);
+		m_joystick_connected = true;
 	}
 
 	m_joystick_id = id;

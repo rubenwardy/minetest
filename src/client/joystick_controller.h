@@ -109,6 +109,10 @@ public:
 	bool handleEvent(const irr::SEvent::SJoystickEvent &ev);
 	void clear();
 
+	bool isConnected() const {
+		return m_joystick_connected;
+	}
+
 	bool wasKeyDown(GameKeyType b)
 	{
 		bool r = m_past_keys_pressed[b];
@@ -159,6 +163,7 @@ private:
 	s16 m_axes_vals[JA_COUNT];
 
 	u8 m_joystick_id = 0;
+	bool m_joystick_connected = false;
 
 	std::bitset<KeyType::INTERNAL_ENUM_COUNT> m_keys_down;
 	std::bitset<KeyType::INTERNAL_ENUM_COUNT> m_keys_pressed;

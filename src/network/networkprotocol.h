@@ -993,6 +993,7 @@ enum ToServerCommand
 		v2s16 render_target_size
 		f32 gui_scaling
 		f32 hud_scaling
+		u8 input_methods
  	*/
 
 	TOSERVER_NUM_MSG_TYPES = 0x54,

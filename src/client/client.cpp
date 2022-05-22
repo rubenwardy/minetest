@@ -1371,10 +1371,13 @@ void Client::sendHaveMedia(const std::vector<u32> &tokens)
 
 void Client::sendUpdateClientInfo(const ClientDynamicInfo& info)
 {
-	NetworkPacket pkt(TOSERVER_UPDATE_CLIENT_INFO, 4*2 + 4 + 4);
+	unsigned long input_methods = info.input_methods.to_ulong();
+
+	NetworkPacket pkt(TOSERVER_UPDATE_CLIENT_INFO, 4*2 + 4 + 4 + 1);
 	pkt << (u32)info.render_target_size.X << (u32)info.render_target_size.Y;
 	pkt << info.real_gui_scaling;
 	pkt << info.real_hud_scaling;
+	pkt << (u8)input_methods;
 
 	Send(&pkt);
 }

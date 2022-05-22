@@ -2478,7 +2478,17 @@ ClientDynamicInfo Game::getCurrentDynamicInfo() const
 	f32 gui_scaling = g_settings->getFloat("gui_scaling") * density;
 	f32 hud_scaling = g_settings->getFloat("hud_scaling") * density;
 
-	return { screen_size, gui_scaling, hud_scaling };
+	std::bitset<5> input_methods;
+#ifdef HAVE_TOUCHSCREENGUI
+	input_methods.set(ClientDynamicInfo::IM_TOUCHSCREEN_CONTROLS, true);
+	input_methods.set(ClientDynamicInfo::IM_TOUCHSCREEN_GUI, true);
+#else
+	input_methods.set(ClientDynamicInfo::IM_KEYBOARD, true);
+	input_methods.set(ClientDynamicInfo::IM_MOUSE, true);
+#endif
+	input_methods.set(ClientDynamicInfo::IM_GAMEPAD, input->joystick.isConnected());
+
+	return { screen_size, gui_scaling, hud_scaling, input_methods };
 }
 
 void Game::updateCameraOrientation(CameraOrientation *cam, float dtime)

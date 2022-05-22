@@ -282,23 +282,67 @@ int ModApiServer::l_get_player_window_information(lua_State *L)
 		return 0;
 
 	auto dynamic = server->getClientDynamicInfo(player->getPeerId());
+	if (!dynamic || dynamic->render_target_size == v2u32())
+		return 0;
 
-	if (dynamic && dynamic->render_target_size != v2u32()) {
-		lua_newtable(L);
-		int dyn_table = lua_gettop(L);
+	lua_newtable(L);
+	int table = lua_gettop(L);
 
-		lua_pushstring(L, "size");
-		push_v2u32(L, dynamic->render_target_size);
-		lua_settable(L, dyn_table);
+	lua_pushstring(L, "size");
+	push_v2u32(L, dynamic->render_target_size);
+	lua_settable(L, table);
 
-		lua_pushstring(L, "real_gui_scaling");
-		lua_pushnumber(L, dynamic->real_gui_scaling);
-		lua_settable(L, dyn_table);
+	lua_pushstring(L, "real_gui_scaling");
+	lua_pushnumber(L, dynamic->real_gui_scaling);
+	lua_settable(L, table);
 
-		lua_pushstring(L, "real_hud_scaling");
-		lua_pushnumber(L, dynamic->real_hud_scaling);
-		lua_settable(L, dyn_table);
-	}
+	lua_pushstring(L, "real_hud_scaling");
+	lua_pushnumber(L, dynamic->real_hud_scaling);
+	lua_settable(L, table);
+
+	return 1;
+}
+
+// l_get_player_input_methods
+int ModApiServer::l_get_player_input_methods(lua_State *L)
+{
+	NO_MAP_LOCK_REQUIRED;
+
+	Server *server = getServer(L);
+
+	const char *name = luaL_checkstring(L, 1);
+	RemotePlayer *player = server->getEnv().getPlayer(name);
+	if (!player)
+		return 0;
+
+	auto dynamic = server->getClientDynamicInfo(player->getPeerId());
+	if (!dynamic)
+		return 0;
+
+	lua_newtable(L);
+	int table = lua_gettop(L);
+
+	lua_pushstring(L, "has_touchscreen_controls");
+	lua_pushboolean(L,
+			dynamic->hasInputMethod(ClientDynamicInfo::IM_TOUCHSCREEN_CONTROLS));
+	lua_settable(L, table);
+
+	lua_pushstring(L, "has_touchscreen_gui");
+	lua_pushboolean(L,
+			dynamic->hasInputMethod(ClientDynamicInfo::IM_TOUCHSCREEN_GUI));
+	lua_settable(L, table);
+
+	lua_pushstring(L, "has_keyboard");
+	lua_pushboolean(L, dynamic->hasInputMethod(ClientDynamicInfo::IM_KEYBOARD));
+	lua_settable(L, table);
+
+	lua_pushstring(L, "has_mouse");
+	lua_pushboolean(L, dynamic->hasInputMethod(ClientDynamicInfo::IM_MOUSE));
+	lua_settable(L, table);
+
+	lua_pushstring(L, "has_gamepad");
+	lua_pushboolean(L, dynamic->hasInputMethod(ClientDynamicInfo::IM_GAMEPAD));
+	lua_settable(L, table);
 
 	return 1;
 }
@@ -656,6 +700,7 @@ void ModApiServer::Initialize(lua_State *L, int top)
 
 	API_FCT(get_player_information);
 	API_FCT(get_player_window_information);
+	API_FCT(get_player_input_methods);
 	API_FCT(get_player_privs);
 	API_FCT(get_player_ip);
 	API_FCT(get_ban_list);

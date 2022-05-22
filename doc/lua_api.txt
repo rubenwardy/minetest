@@ -4754,6 +4754,16 @@ Utilities
           -- Equal to the setting `hud_scaling` multiplied by `dpi / 96`
           real_hud_scaling = 1,
       }
+* `minetest.get_player_input_methods(player_name)`: Will return nil if the information isn't available.
+   Note: it's possible to laptops to have touchscreens, and for phones to have physical keyboards!
+
+      {
+          has_touchscreen_controls = false, -- whether the touchscreen joystick / in-game controls are enabled
+          has_touchscreen_gui = true, -- whether formspecs should be optimised for touchscreen use
+          has_keyboard = true, -- whether they have a physical keyboard
+          has_mouse = true, -- whether they have a physical mouse / touchpad
+          has_gamepad = false, -- whether they have a gamepad / controller
+      }
 
 * `minetest.mkdir(path)`: returns success.
     * Creates a directory specified by `path`, creating parent directories
