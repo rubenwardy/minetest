@@ -1853,6 +1853,7 @@ void GenericCAO::processMessage(const std::string &data)
 		std::string bone = deSerializeString16(is);
 		const BoneOverride *previous = m_bone_override[bone];
 		BoneOverride *props = new BoneOverride();
+		bool is_identity = false; // whether this is an identity override to be removed
 		props->position.vector = readV3F32(is);
 		props->rotation.next = core::quaternion(readV3F32(is) * core::DEGTORAD);
 		if (is.eof()) {
@@ -1869,7 +1870,7 @@ void GenericCAO::processMessage(const std::string &data)
 					&& props->position.vector == v3f(0.0f, 0.0f, 0.0f)
 					&& props->rotation.next == core::quaternion()
 					&& props->scale.vector == v3f(1.0f, 1.0f, 1.0f)) {
-				m_bone_override.erase(bone); // identity override, remove
+				is_identity = true;
 			} else {
 				props->position.absolute = (absoluteFlag & 1) > 0;
 				props->rotation.absolute = (absoluteFlag & 2) > 0;
@@ -1884,10 +1885,11 @@ void GenericCAO::processMessage(const std::string &data)
 					props->rotation.interpolation_duration = 0.0f;
 					props->scale.interpolation_duration = 0.0f;
 				}
-				m_bone_override[bone] = props;
 			}
 		}
 		if (previous) delete previous;
+		if (is_identity) m_bone_override.erase(bone);
+		else m_bone_override[bone] = props;
 		// updateBonePosition(); now called every step
 	} else if (cmd == AO_CMD_ATTACH_TO) {
 		u16 parent_id = readS16(is);
