@@ -209,6 +209,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 		TOCLIENT_MEDIA_PUSH changed, TOSERVER_HAVE_MEDIA added
 		Added new particlespawner parameters
 		[scheduled bump for 5.6.0]
+	PROTOCOL VERSION 41:
+		AO_CMD_SET_BONE_POSITION extended
+		[scheduled bump for 5.7.0]
 */
 
 #define LATEST_PROTOCOL_VERSION 41
