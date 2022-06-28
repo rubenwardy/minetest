@@ -1453,17 +1453,6 @@ ToolCapabilities read_tool_capabilities(
 				// Read simple parameters
 				getintfield(L, table_groupcap, "maxlevel", groupcap.maxlevel);
 				getintfield(L, table_groupcap, "uses", groupcap.uses);
-				// DEPRECATED: maxwear
-				float maxwear = 0;
-				if (getfloatfield(L, table_groupcap, "maxwear", maxwear)){
-					if (maxwear != 0)
-						groupcap.uses = 1.0/maxwear;
-					else
-						groupcap.uses = 0;
-					warningstream << "Field \"maxwear\" is deprecated; "
-							<< "replace with uses=1/maxwear" << std::endl;
-					infostream << script_get_backtrace(L) << std::endl;
-				}
 				// Read "times" table
 				lua_getfield(L, table_groupcap, "times");
 				if(lua_istable(L, -1)){
