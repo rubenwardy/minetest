@@ -70,7 +70,7 @@ end
 -- @param world_path Path to the world
 -- @param all_mods List of mods, with `enabled` property.
 -- @returns with_errors, enabled_mods_by_name
-local function check_mod_configuration(world_path, all_mods)
+local function check_mod_configuration(world_path, all_mods, gameid)
 	-- Build up lookup tables for enabled mods and all mods by vpath
 	local enabled_mod_paths = {}
 	local all_mods_by_vpath = {}
@@ -111,6 +111,15 @@ local function check_mod_configuration(world_path, all_mods)
 		end
 	end
 
+	-- Add support support hints
+	for i, mod in ipairs(all_mods) do
+		if mod.type == "mod" and not mod.is_game_content and not mod.enabled and
+				not pkgmgr.content_supports_game(gameid, mod.path) then
+			local error = { type = "unsupported" }
+			with_error[mod.virtual_path] = error
+		end
+	end
+
 	return with_error, enabled_mods_by_name
 end
 
@@ -120,7 +129,7 @@ local function get_formspec(data)
 	end
 
 	local all_mods = data.list:get_list()
-	local with_error, enabled_mods_by_name = check_mod_configuration(data.worldspec.path, all_mods)
+	local with_error, enabled_mods_by_name = check_mod_configuration(data.worldspec.path, all_mods, data.worldspec.gameid)
 
 	local mod = all_mods[data.selected_mod] or {name = ""}
 

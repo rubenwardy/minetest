@@ -353,44 +353,46 @@ int ModApiMainMenu::l_get_content_info(lua_State *L)
 {
 	std::string path = luaL_checkstring(L, 1);
 
-	ContentSpec spec;
-	spec.path = path;
-	parseContentInfo(spec);
+	ContentSpec contentSpec;
+	contentSpec.path = path;
+	parseContentInfo(contentSpec);
 
 	lua_newtable(L);
 
-	lua_pushstring(L, spec.name.c_str());
+	lua_pushstring(L, contentSpec.name.c_str());
 	lua_setfield(L, -2, "name");
 
-	lua_pushstring(L, spec.type.c_str());
+	lua_pushstring(L, contentSpec.type.c_str());
 	lua_setfield(L, -2, "type");
 
-	lua_pushstring(L, spec.author.c_str());
+	lua_pushstring(L, contentSpec.author.c_str());
 	lua_setfield(L, -2, "author");
 
-	if (!spec.title.empty()) {
-		lua_pushstring(L, spec.title.c_str());
+	if (!contentSpec.title.empty()) {
+		lua_pushstring(L, contentSpec.title.c_str());
 		lua_setfield(L, -2, "title");
 	}
 
-	lua_pushinteger(L, spec.release);
+	lua_pushinteger(L, contentSpec.release);
 	lua_setfield(L, -2, "release");
 
-	lua_pushstring(L, spec.desc.c_str());
+	lua_pushstring(L, contentSpec.desc.c_str());
 	lua_setfield(L, -2, "description");
 
-	lua_pushstring(L, spec.path.c_str());
+	lua_pushstring(L, contentSpec.path.c_str());
 	lua_setfield(L, -2, "path");
 
-	if (spec.type == "mod") {
-		ModSpec spec;
-		spec.path = path;
-		parseModContents(spec);
+	int i;
+
+	if (contentSpec.type == "mod") {
+		ModSpec modSpec;
+		modSpec.path = path;
+		parseModContents(modSpec);
 
 		// Dependencies
 		lua_newtable(L);
-		int i = 1;
-		for (const auto &dep : spec.depends) {
+		i = 1;
+		for (const auto &dep : modSpec.depends) {
 			lua_pushstring(L, dep.c_str());
 			lua_rawseti(L, -2, i++);
 		}
@@ -399,12 +401,30 @@ int ModApiMainMenu::l_get_content_info(lua_State *L)
 		// Optional Dependencies
 		lua_newtable(L);
 		i = 1;
-		for (const auto &dep : spec.optdepends) {
+		for (const auto &dep : modSpec.optdepends) {
 			lua_pushstring(L, dep.c_str());
 			lua_rawseti(L, -2, i++);
 		}
 		lua_setfield(L, -2, "optional_depends");
 	}
+
+	// supported_games
+	lua_newtable(L);
+	i = 1;
+	for (const auto &game : contentSpec.supported_games) {
+		lua_pushstring(L, game.c_str());
+		lua_rawseti(L, -2, i++);
+	}
+	lua_setfield(L, -2, "supported_games");
+
+	// supported_games
+	lua_newtable(L);
+	i = 1;
+	for (const auto &game : contentSpec.unsupported_games) {
+		lua_pushstring(L, game.c_str());
+		lua_rawseti(L, -2, i++);
+	}
+	lua_setfield(L, -2, "unsupported_games");
 
 	return 1;
 }

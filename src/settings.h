@@ -167,6 +167,12 @@ public:
 	float getFloat(const std::string &name, float min, float max) const;
 	v2f getV2F(const std::string &name) const;
 	v3f getV3F(const std::string &name) const;
+
+	/**
+	 * Gets comma-separated listed, trimmed. Empty elements are removed.
+	 */
+	std::vector<std::string> getList(const std::string &name) const;
+
 	u32 getFlagStr(const std::string &name, const FlagDesc *flagdesc,
 			u32 *flagmask) const;
 	bool getNoiseParams(const std::string &name, NoiseParams &np) const;

@@ -306,6 +306,29 @@ inline std::string trim(const std::string &str)
 	return str.substr(front, back - front);
 }
 
+/**
+ * Returns a vector representing str split by separator, with parts trimmed and
+ * empty strings removed
+ *
+ * @param str
+ * @param separator
+ * @return
+ */
+inline std::vector<std::string> str_split_trim(const std::string &str, char separator)
+{
+	std::vector<std::string> parts = str_split(str, separator);
+
+	auto iterator = parts.begin();
+	while (iterator != parts.end()) {
+		*iterator = trim(*iterator);
+		if (iterator->empty())
+			iterator = parts.erase(iterator);
+		else
+			++iterator;
+	}
+
+	return parts;
+}
 
 /**
  * Returns whether \p str should be regarded as (bool) true.  Case and leading

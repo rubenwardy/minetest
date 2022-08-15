@@ -55,6 +55,7 @@ public:
 	void testIsPowerOfTwo();
 	void testMyround();
 	void testStringJoin();
+	void testStringSplitTrim();
 	void testEulerConversion();
 	void testBase64();
 	void testSanitizeDirName();
@@ -87,6 +88,7 @@ void TestUtilities::runTests(IGameDef *gamedef)
 	TEST(testIsPowerOfTwo);
 	TEST(testMyround);
 	TEST(testStringJoin);
+	TEST(testStringSplitTrim);
 	TEST(testEulerConversion);
 	TEST(testBase64);
 	TEST(testSanitizeDirName);
@@ -421,6 +423,22 @@ void TestUtilities::testStringJoin()
 	UASSERT(str_join(input, " and ") == "one and two and three");
 }
 
+void TestUtilities::testStringSplitTrim()
+{
+	std::vector<std::string> output;
+
+	output = str_split_trim("one, , two,three", ',');
+	UASSERT(output.size() == 3);
+	UASSERT(output[0] == "one");
+	UASSERT(output[1] == "two");
+	UASSERT(output[2] == "three");
+
+	output = str_split_trim("", ',');
+	UASSERT(output.size() == 0);
+
+	output = str_split_trim(" \t\n ", ',');
+	UASSERT(output.size() == 0);
+}
 
 static bool within(const f32 value1, const f32 value2, const f32 precision)
 {

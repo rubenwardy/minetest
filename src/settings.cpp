@@ -572,6 +572,12 @@ v3f Settings::getV3F(const std::string &name) const
 }
 
 
+std::vector<std::string> Settings::getList(const std::string &name) const
+{
+	return str_split_trim(get(name), ',');
+}
+
+
 u32 Settings::getFlagStr(const std::string &name, const FlagDesc *flagdesc,
 	u32 *flagmask) const
 {

@@ -165,6 +165,14 @@ end
 --modmanager implementation
 pkgmgr = {}
 
+function pkgmgr.clean_game_id(game_id)
+	if #game_id > 5 and game_id:sub(#game_id - 4) == "_game" then
+		return game_id:sub(1, #game_id - 5)
+	else
+		return game_id
+	end
+end
+
 function pkgmgr.get_texture_packs()
 	local txtpath = core.get_texturepath()
 	local txtpath_system = core.get_texturepath_share()
@@ -350,9 +358,11 @@ function pkgmgr.render_packagelist(render_list, use_technical_names, with_error)
 	for i, v in ipairs(list) do
 		local color = ""
 		local icon = 0
+		local label = ""
+
 		local error = with_error and with_error[v.virtual_path]
 		local function update_error(val)
-			if val and (not error or (error.type == "warning" and val.type == "error")) then
+			if val and (not error or (error.type ~= "error" and val.type == "error")) then
 				error = val
 			end
 		end
@@ -396,9 +406,15 @@ function pkgmgr.render_packagelist(render_list, use_technical_names, with_error)
 			if error.type == "warning" then
 				color = mt_color_orange
 				icon = 2
-			else
+			elseif error.type == "error" then
 				color = mt_color_red
 				icon = 3
+			elseif error.type == "unsupported" then
+				color = mt_color_grey
+				icon = 0
+				label = " " .. fgettext_ne("[Unsupported Game]")
+			else
+				error("Unknown type: " .. error.type)
 			end
 		end
 
@@ -413,11 +429,13 @@ function pkgmgr.render_packagelist(render_list, use_technical_names, with_error)
 			retval[#retval + 1] = icon
 		end
 
+
 		if use_technical_names then
-			retval[#retval + 1] = core.formspec_escape(v.list_name or v.name)
+			label = (v.list_name or v.name) .. label
 		else
-			retval[#retval + 1] = core.formspec_escape(v.list_title or v.list_name or v.title or v.name)
+			label = (v.list_title or v.list_name or v.title or v.name) .. label
 		end
+		retval[#retval + 1] = core.formspec_escape(label)
 	end
 
 	return table.concat(retval, ",")
@@ -431,6 +449,32 @@ function pkgmgr.get_dependencies(path)
 
 	local info = core.get_content_info(path)
 	return info.depends or {}, info.optional_depends or {}
+end
+
+--------------------------------------------------------------------------------
+function pkgmgr.content_supports_game(gameid, path)
+	assert(type(gameid) == "string")
+	assert(type(path) == "string")
+
+	gameid = pkgmgr.clean_game_id(gameid)
+
+	local info = core.get_content_info(path)
+	for i, other_id in ipairs(info.supported_games) do
+		info.supported_games[i] = pkgmgr.clean_game_id(other_id)
+	end
+	for i, other_id in ipairs(info.unsupported_games) do
+		info.unsupported_games[i] = pkgmgr.clean_game_id(other_id)
+	end
+
+	local is_supported = true
+	if #info.supported_games > 0 then
+		is_supported = table.indexof(info.supported_games, gameid) > 0
+	end
+	if table.indexof(info.unsupported_games, gameid) > 0 then
+		is_supported = false
+	end
+
+	return is_supported
 end
 
 ----------- tests whether all of the mods in the modpack are enabled -----------

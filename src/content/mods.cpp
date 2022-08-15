@@ -107,26 +107,14 @@ bool parseModContents(ModSpec &spec)
 	bool mod_conf_has_depends = false;
 	if (info.exists("depends")) {
 		mod_conf_has_depends = true;
-		std::string dep = info.get("depends");
-		// clang-format off
-		dep.erase(std::remove_if(dep.begin(), dep.end(),
-				static_cast<int (*)(int)>(&std::isspace)), dep.end());
-		// clang-format on
-		for (const auto &dependency : str_split(dep, ',')) {
-			spec.depends.insert(dependency);
-		}
+		const auto &deps = info.getList("depends");
+		spec.depends.insert(deps.begin(), deps.end());
 	}
 
 	if (info.exists("optional_depends")) {
 		mod_conf_has_depends = true;
-		std::string dep = info.get("optional_depends");
-		// clang-format off
-		dep.erase(std::remove_if(dep.begin(), dep.end(),
-				static_cast<int (*)(int)>(&std::isspace)), dep.end());
-		// clang-format on
-		for (const auto &dependency : str_split(dep, ',')) {
-			spec.optdepends.insert(dependency);
-		}
+		const auto &deps = info.getList("optional_depends");
+		spec.depends.insert(deps.begin(), deps.end());
 	}
 
 	// Fallback to depends.txt

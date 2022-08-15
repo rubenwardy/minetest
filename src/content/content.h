@@ -37,6 +37,9 @@ struct ContentSpec
 	/// Short description
 	std::string desc;
 	std::string path;
+
+	std::vector<std::string> supported_games;
+	std::vector<std::string> unsupported_games;
 };
 
 void parseContentInfo(ContentSpec &spec);

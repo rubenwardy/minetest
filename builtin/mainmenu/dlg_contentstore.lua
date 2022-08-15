@@ -600,13 +600,7 @@ function store.load()
 	for _, package in pairs(store.packages_full) do
 		local name_len = #package.name
 		-- This must match what store.update_paths() does!
-		package.id = package.author:lower() .. "/"
-		if package.type == "game" and name_len > 5 and package.name:sub(name_len - 4) == "_game" then
-			package.id = package.id .. package.name:sub(1, name_len - 5)
-		else
-			package.id = package.id .. package.name
-		end
-
+		package.id = package.author:lower() .. "/" .. pkgmgr.clean_game_id(package.name)
 		package.url_part = urlencode(package.author) .. "/" .. urlencode(package.name)
 
 		if package.aliases then
@@ -639,7 +633,7 @@ function store.update_paths()
 	pkgmgr.update_gamelist()
 	for _, game in pairs(pkgmgr.games) do
 		if game.author ~= "" and game.release > 0 then
-			local id = game.author:lower() .. "/" .. game.id
+			local id = game.author:lower() .. "/" .. pkgmgr.clean_game_id(game.id)
 			game_hash[store.aliases[id] or id] = game
 		end
 	end

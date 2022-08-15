@@ -112,6 +112,12 @@ void parseContentInfo(ContentSpec &spec)
 
 		if (conf.exists("release"))
 			spec.release = conf.getS32("release");
+
+		if (conf.exists("supported_games"))
+			spec.supported_games = conf.getList("supported_games");
+
+		if (conf.exists("unsupported_games"))
+			spec.unsupported_games = conf.getList("unsupported_games");
 	}
 
 	if (spec.desc.empty()) {

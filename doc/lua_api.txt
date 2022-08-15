@@ -210,6 +210,22 @@ A `Settings` file that provides meta information about the mod.
 * `release`: Ignore this: Should only ever be set by ContentDB, as it is an
              internal ID used to track versions.
 * `title`: A human-readable title to address the mod.
+* `supported_games`: Comma-seperated list of game ids that this mod supports.
+  If not present, mod is assumed to support all games.
+* `unsupported_games`: Comma-seperated list of game ids that this mod doesn't support.
+  Use to add exceptions to supported_games.
+
+Examples:
+
+	# Support only Minetest Game and FooGame
+	supported_games = minetest_game, foogame
+
+	# Support all but one game
+	unsupported_games = mygame
+
+	# Support only Mineclone2 but not Mineclone5
+	supported_games = mineclone2
+	unsupported_games = mineclone5
 
 ### `screenshot.png`
 
