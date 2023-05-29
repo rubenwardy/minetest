@@ -13,8 +13,8 @@ and contributors (see source file comments and the version control log)
 In case you downloaded the source code
 --------------------------------------
 If you downloaded the Minetest Engine source code in which this file is
-contained, you probably want to download the [Minetest Game](https://github.com/minetest/minetest_game/)
-project too. See its README.txt for more information.
+contained, you probably want to download [a game](https://content.minetest.net/packages/?type=game)
+as well.
 
 Table of Contents
 ------------------
