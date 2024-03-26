@@ -52,8 +52,12 @@ public:
 	// Check if mod is whitelisted in the given setting
 	// This additionally checks that the mod's main file scope is executing.
 	static bool checkWhitelisted(lua_State *L, const std::string &setting);
+
+	static bool checkPath(lua_State *L, std::string path, bool write_required,
+			bool *write_allowed, const IGameDef *gamedef, const std::string &modname);
+
 	// Checks if mods are allowed to read (and optionally write) to the path
-	static bool checkPath(lua_State *L, const char *path, bool write_required,
+	static bool checkPath(lua_State *L, std::string path, bool write_required,
 			bool *write_allowed=NULL);
 
 private:

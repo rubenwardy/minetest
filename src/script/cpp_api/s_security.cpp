@@ -505,7 +505,7 @@ bool ScriptApiSecurity::safeLoadFile(lua_State *L, const char *path, const char 
 }
 
 
-bool checkModNameWhitelisted(const std::string &mod_name, const std::string &setting)
+bool checkModNameWhitelisted(std::string_view mod_name, const std::string &setting)
 {
 	assert(str_starts_with(setting, "secure."));
 
@@ -526,9 +526,18 @@ bool ScriptApiSecurity::checkWhitelisted(lua_State *L, const std::string &settin
 	return checkModNameWhitelisted(mod_name, setting);
 }
 
+bool ScriptApiSecurity::checkPath(lua_State *L, std::string path, bool write_required,
+		bool *write_allowed)
+{
+	ScriptApiBase *script = ModApiBase::getScriptApiBase(L);
+	const IGameDef *gamedef = script->getGameDef();
+	std::string mod_name = ScriptApiBase::getCurrentModNameInsecure(L);
+	return checkPath(L, path, write_required, write_allowed, gamedef, mod_name);
+}
 
-bool ScriptApiSecurity::checkPath(lua_State *L, const char *path,
-		bool write_required, bool *write_allowed)
+bool ScriptApiSecurity::checkPath(lua_State *L, std::string path,
+		bool write_required, bool *write_allowed, const IGameDef *gamedef,
+		const std::string &mod_name)
 {
 	if (write_allowed)
 		*write_allowed = false;
@@ -546,11 +555,10 @@ bool ScriptApiSecurity::checkPath(lua_State *L, const char *path,
 	// If we couldn't find the absolute path (path doesn't exist) then
 	// try removing the last components until it works (to allow
 	// non-existent files/folders for mkdir).
-	std::string cur_path = path;
 	std::string removed;
-	while (abs_path.empty() && !cur_path.empty()) {
+	while (abs_path.empty() && !path.empty()) {
 		std::string component;
-		cur_path = fs::RemoveLastPathComponent(cur_path, &component);
+		path = fs::RemoveLastPathComponent(path, &component);
 		if (component == "..") {
 			// Parent components can't be allowed or we could allow something like
 			// /home/user/minetest/worlds/foo/noexist/../../../../../../etc/passwd.
@@ -561,7 +569,7 @@ bool ScriptApiSecurity::checkPath(lua_State *L, const char *path,
 			return false;
 		}
 		removed.append(component).append(removed.empty() ? "" : DIR_DELIM + removed);
-		abs_path = fs::AbsolutePath(cur_path);
+		abs_path = fs::AbsolutePath(path);
 	}
 	if (abs_path.empty())
 		return false;
@@ -570,14 +578,10 @@ bool ScriptApiSecurity::checkPath(lua_State *L, const char *path,
 	if (!removed.empty())
 		abs_path += DIR_DELIM + removed;
 
-	// Get gamedef from registry
-	ScriptApiBase *script = ModApiBase::getScriptApiBase(L);
-	const IGameDef *gamedef = script->getGameDef();
 	if (!gamedef)
 		return false;
 
 	// Get mod name
-	std::string mod_name = ScriptApiBase::getCurrentModNameInsecure(L);
 	if (!mod_name.empty()) {
 		// Builtin can access anything
 		if (mod_name == BUILTIN_MOD_NAME) {

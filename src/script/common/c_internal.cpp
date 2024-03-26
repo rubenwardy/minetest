@@ -27,6 +27,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 std::string script_get_backtrace(lua_State *L)
 {
+	if (L == nullptr)
+		return ""; // unit tests
+
 	lua_getglobal(L, "debug");
 	lua_getfield(L, -1, "traceback");
 	lua_call(L, 0, 1);
@@ -124,6 +127,8 @@ void script_error(lua_State *L, int pcall_result, const char *mod, const char *f
 
 static void script_log_add_source(lua_State *L, std::string &message, int stack_depth)
 {
+	if (L == nullptr)
+		return; // called from tests
 	if (stack_depth <= 0)
 		return;
 
