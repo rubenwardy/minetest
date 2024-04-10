@@ -172,7 +172,7 @@ local function get_formspec(data)
 
 		if current_tab == 1 then
 			-- Screenshots and description
-			local hypertext = ""
+			local hypertext = "<big><b>" .. core.hypertext_escape(info.short_description) .. "</b></big>\n"
 			local winfo = core.get_window_info()
 			local fs_to_px = winfo.size.x / winfo.max_formspec_size.x
 			for i, ss in ipairs(info.screenshots) do
@@ -183,7 +183,6 @@ local function get_formspec(data)
 				end
 			end
 			hypertext = hypertext .. "\n" .. info.long_description.head ..
-					"<big><b>" .. core.hypertext_escape(info.short_description) .. "</b></big>\n\n" ..
 					info.long_description.body
 
 			hypertext = hypertext:gsub("<img name=blank.png ",
