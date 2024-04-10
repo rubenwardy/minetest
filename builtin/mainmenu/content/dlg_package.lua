@@ -179,7 +179,7 @@ local function get_formspec(data)
 				local path = get_screenshot(data.package, ss.url, 2)
 				hypertext = hypertext .. "<action name=ss_" .. i .. "><img name=" .. core.hypertext_escape(path) .. " width=" .. (3 * fs_to_px) .. " height=" .. (2 * fs_to_px) .. "></action>"
 				if i ~= #info.screenshots then
-					hypertext = hypertext .. "<img name=" .. core.hypertext_escape(defaulttexturedir) .. "blank.png width=" .. (0.25 * fs_to_px).. " height=" .. (2.25 * fs_to_px).. ">"
+					hypertext = hypertext .. "<img name=blank.png width=" .. (0.25 * fs_to_px).. " height=" .. (2.25 * fs_to_px).. ">"
 				end
 			end
 			hypertext = hypertext .. "\n" .. info.long_description.head ..
