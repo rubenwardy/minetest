@@ -484,6 +484,7 @@ local function handle_submit(this, fields)
 		return true
 	end
 
+	local num_per_page = this.data.num_per_page
 	local start_idx = (cur_page - 1) * num_per_page + 1
 	assert(start_idx ~= nil)
 	for i=start_idx, math.min(#contentdb.packages, start_idx+num_per_page-1) do
