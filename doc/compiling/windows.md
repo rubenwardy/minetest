@@ -1,6 +1,6 @@
 # Compiling on Windows using Visual Studio MSVC
 
-**Compiling with Visual Studio** | [Compiling with MSYS2](windows-msys2.md)
+**Compiling with Visual Studio** | [Compiling with MSYS2](windows_msys2.md)
 
 ## Requirements
 

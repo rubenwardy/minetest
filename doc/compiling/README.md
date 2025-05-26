@@ -1,10 +1,14 @@
 # Compiling Luanti
 
-- [Compiling on Linux](linux.md)
+- Linux
+  - [Compiling on Linux](linux.md)
+  - [Compiling a headless Linux server](linux_server.md)
 - Windows
   - [Compiling on Windows using Visual Studio](windows.md)
   - [Compiling on Windows using MSYS2](windows_msys2.md)
 - [Compiling on MacOS](macos.md)
+- [Compiling for Android](android.md)
+- [Improving build times](improving_build_times.md)
 
 
 ## CMake options
