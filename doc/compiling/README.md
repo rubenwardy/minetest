@@ -1,8 +1,6 @@
 # Compiling Luanti
 
-- Linux
-  - [Compiling on Linux](linux.md)
-  - [Compiling a headless Linux server](linux_server.md)
+- [Compiling on Linux](linux.md)
 - Windows
   - [Compiling on Windows using Visual Studio](windows.md)
   - [Compiling on Windows using MSYS2](windows_msys2.md)

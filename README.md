@@ -124,7 +124,6 @@ Compiling
 
 - [Compiling - common information](doc/compiling/README.md)
 - [Compiling on Linux](doc/compiling/linux.md)
-- [Compiling a headless Linux server](doc/compiling/linux_server.md)
 - [Compiling on Windows using Visual Studio](doc/compiling/windows.md)
 - [Compiling on Windows using MSYS2](doc/compiling/windows_msys2.md)
 - [Compiling on MacOS](doc/compiling/macos.md)
