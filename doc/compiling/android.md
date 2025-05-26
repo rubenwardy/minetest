@@ -91,7 +91,7 @@ for example by downloading an official release, unpacking it and then running `.
 
 Then, open `luanti/android` (_not_ the `luanti` folder):
 
-![The Android Studio file picker, used to select `luanti/android`](/images/developing_for_android/open_folder.png)
+![The Android Studio file picker, used to select `luanti/android`](images/open_folder.png)
 
 It will load for a while. Be patient.
 
@@ -99,16 +99,16 @@ If you just want to quickly install and run a debug build on your phone,
 you can simply click the "run" button in the top bar,
 which will build Luanti for the correct ABI and install it afterwards via ADB [^1]:
 
-![Android Studio "Run" Button](/images/developing_for_android/run.png)
+![Android Studio "Run" Button](images/run.png)
 
 Otherwise, click "Build" > "Generate Signed Bundle / APK" [^2]:
 
-![Android Studio menu](/images/developing_for_android/generate_bundle.png)
+![Android Studio menu](images/generate_bundle.png)
 
 Android Studio will now ask you to choose between a Bundle (for uploading to app stores) and an APK (for direct distribution & deployment).
 We want to create an APK:
 
-![Android Studio prompting the user to choose between a Bundle or APK](/images/developing_for_android/choose_bundle_format.png)
+![Android Studio prompting the user to choose between a Bundle or APK](images/choose_bundle_format.png)
 
 Now we have to sign it. Android Studio guides you through this process.
 You first have to create a key store if you don't already have one.
@@ -123,7 +123,7 @@ Key creation asks for personal information.
 Fill it out responsibly with as much information as you are comfortable providing.
 You can not leave it entirely blank.
 
-![Android Studio with a chosen key store path of `/home/lars/Android/Keystore.jks`](/images/developing_for_android/create_keystore.png)
+![Android Studio with a chosen key store path of `/home/lars/Android/Keystore.jks`](images/create_keystore.png)
 
 Now proceed: Click "OK" and then "Next".
 
