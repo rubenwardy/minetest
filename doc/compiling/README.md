@@ -1,7 +1,9 @@
 # Compiling Luanti
 
-- [Compiling on GNU/Linux](linux.md)
-- [Compiling on Windows](windows.md)
+- [Compiling on Linux](linux.md)
+- Windows
+  - [Compiling on Windows using Visual Studio](windows.md)
+  - [Compiling on Windows using MSYS2](windows_msys2.md)
 - [Compiling on MacOS](macos.md)
 
 
