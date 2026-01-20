@@ -6,11 +6,27 @@ function Kiosk:get_formspec()
 		return ""
 	end
 
+	mm_game_theme.set_engine(true)
+
+	local size = contentdb.get_formspec_size()
+	local window_padding = contentdb.get_formspec_padding()
+	local window = core.get_window_info()
+
 	local fs = {
 		"formspec_version[7]",
-		"size[12,5]",
-		"label[1,2;Hello world]",
-		"button[1,3;2,0.8;open_menu;Open menu]",
+		"size[", size.x, ",", size.y, "]",
+		"padding[0,0]",
+		"bgcolor[;true]",
+
+		"container[", window_padding.x, ",", window_padding.y, "]",
+
+		"label[0,0;", size.x, ",1;Luanti demo mode]",
+
+		"container[", (size.x - 4) / 2,  ", ", size.y - window_padding.y * 2 - 0.8, "]",
+		"button[0,0;4,0.8;open_menu;Open main menu]",
+		"container_end[]",
+
+		"container_end[]",
 	}
 
 	return table.concat(fs)
