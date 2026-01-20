@@ -39,6 +39,7 @@ dofile(menupath .. DIR_DELIM .. "dlg_reinstall_mtg.lua")
 dofile(menupath .. DIR_DELIM .. "dlg_rebind_keys.lua")
 dofile(menupath .. DIR_DELIM .. "dlg_clients_list.lua")
 dofile(menupath .. DIR_DELIM .. "dlg_server_list_mods.lua")
+dofile(menupath .. DIR_DELIM .. "kiosk" .. DIR_DELIM .. "init.lua")
 
 local tabs = {
 	content  = dofile(menupath .. DIR_DELIM .. "tab_content.lua"),
@@ -47,13 +48,13 @@ local tabs = {
 	play_online = dofile(menupath .. DIR_DELIM .. "tab_online.lua")
 }
 
-local function main_event_handler(tabview, event)
+local function main_event_handler(parent, event)
 	if event == "MenuQuit" then
 		local show_dialog = core.settings:get_bool("enable_esc_dialog")
 		if not ui.childlist["mainmenu_quit_confirm"] and show_dialog then
-			tabview:hide()
+			parent:hide()
 			local dlg = create_exit_dialog()
-			dlg:set_parent(tabview)
+			dlg:set_parent(parent)
 			dlg:show()
 		else
 			core.close()
@@ -105,9 +106,6 @@ local function init_globals()
 	tv_main:add(tabs.content)
 	tv_main:add(tabs.about)
 
-	tv_main:set_global_event_handler(main_event_handler)
-	tv_main:set_fixed_size(false)
-
 	local last_tab = core.settings:get("maintab_LAST")
 	if last_tab and tv_main.current_tab ~= last_tab then
 		tv_main:set_tab(last_tab)
@@ -126,17 +124,20 @@ local function init_globals()
 		end,
 	})
 
-	ui.set_default("maintab")
-	tv_main:show()
+	ui.set_default("kiosk")
+	kiosk:show()
 	ui.update()
 
-	-- synchronous, chain parents to only show one at a time
-	local parent = tv_main
-	parent = migrate_keybindings(parent)
-	check_reinstall_mtg(parent)
+	kiosk:set_global_event_handler(main_event_handler)
 
-	-- asynchronous, will only be shown if we're still on "maintab"
-	check_new_version()
+	tv_main:set_global_event_handler(function(self, event)
+		if event == "MenuQuit" and not self.hidden then
+			tv_main:hide()
+			kiosk:show()
+			return true
+		end
+		return true
+	end)
 end
 
 assert(os.execute == nil)
