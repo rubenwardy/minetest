@@ -1,3 +1,10 @@
+-- Luanti
+-- Copyright (C) 2026 rubenwardy
+-- SPDX-License-Identifier: LGPL-2.1-or-later
+
+local path = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk"
+dofile(path .. DIR_DELIM .. "get_demos.lua")
+
 local Kiosk = {}
 Kiosk.__index = Kiosk
 
@@ -11,6 +18,7 @@ function Kiosk:get_formspec()
 	local size = contentdb.get_formspec_size()
 	local window_padding = contentdb.get_formspec_padding()
 	local window = core.get_window_info()
+	local demos = get_demos()
 
 	local fs = {
 		"formspec_version[7]",
@@ -21,13 +29,26 @@ function Kiosk:get_formspec()
 		"container[", window_padding.x, ",", window_padding.y, "]",
 
 		"label[0,0;", size.x, ",1;Luanti demo mode]",
+	}
 
+	local y = 1
+	for i = 1, #demos do
+		local demo = demos[i]
+		table.insert_all(fs, {
+			"container[0,", y, "]",
+			"label[0,0;3,1;", core.formspec_escape(demo.title), "]",
+			"container_end[]",
+		})
+		y = y + 1
+	end
+
+	table.insert_all(fs, {
 		"container[", (size.x - 4) / 2,  ", ", size.y - window_padding.y * 2 - 0.8, "]",
 		"button[0,0;4,0.8;open_menu;Open main menu]",
 		"container_end[]",
 
 		"container_end[]",
-	}
+	})
 
 	return table.concat(fs)
 end
