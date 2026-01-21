@@ -110,6 +110,14 @@ function Kiosk:handle_buttons(fields)
 		tabview:show()
 		return true
 	end
+
+	local demos = get_demos()
+	for i = 1, #demos do
+		if fields["view_" .. demos[i].title] then
+			demos[i]:start()
+			return true
+		end
+	end
 end
 
 function Kiosk:handle_events(event)

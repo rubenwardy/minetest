@@ -28,6 +28,29 @@ local overrides = {
 	},
 }
 
+local function join_server(self)
+	gamedata.selected_world = 0
+	gamedata.address = self.server.address
+	gamedata.port = self.server.port
+	gamedata.playername = ("fosdem%05d"):format(math.random() * 10000)
+	gamedata.password = "fosdem"
+	gamedata.servername = self.name
+	gamedata.serverdescription = self.description
+	core.start()
+end
+
+local function start_world(self)
+	local timestamp = os.date("%Y-%m-%dT%H-%M-%S")
+	local worldname = "world_" .. timestamp .. "_" .. self.game.id
+	core.create_world(worldname, self.game.id, {})
+	menudata.worldlist:refresh()
+
+	local idx = menudata.worldlist:raw_index_by_uid(worldname)
+	gamedata.selected_world = idx
+	gamedata.singleplayer = true
+	core.start()
+end
+
 function get_demos()
 	local retval = {
 		{
@@ -40,6 +63,7 @@ function get_demos()
 			author = "Zughy and Friends",
 			description = "Arcade Emulation System, a Luanti server",
 			image = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM .. "aes.png",
+			start = join_server,
 		}
 	}
 	for i = 1, #pkgmgr.games do
@@ -52,6 +76,7 @@ function get_demos()
 				author = game.author,
 				description = game.description,
 				image = game.path .. DIR_DELIM .. "screenshot.png",
+				start = start_world,
 			}
 			for key, value in pairs(overrides[game.id] or {}) do
 				demo[key] = value
