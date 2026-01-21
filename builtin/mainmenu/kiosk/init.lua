@@ -62,11 +62,13 @@ function Kiosk:get_formspec()
 		"formspec_version[7]",
 		"size[", size.x, ",", size.y, "]",
 		"padding[0,0]",
-		"bgcolor[;true]",
+		"bgcolor[;true;#111]",
 
 		"container[", window_padding.x, ",", window_padding.y, "]",
 
+		"style_type[label;font_size=32]",
 		"label[0,0;", size.x, ",1;Luanti demo mode]",
+		"style_type[label;font_size=]",
 	}
 
 	local columns = 2
@@ -83,7 +85,7 @@ function Kiosk:get_formspec()
 	end
 
 	table.insert_all(fs, {
-		"container[", (size.x - 4) / 2,  ", ", size.y - window_padding.y * 2 - 0.8, "]",
+		"container[", (size.x - window_padding.x*2 - 4) / 2,  ", ", size.y - window_padding.y * 2 - 0.8, "]",
 		"button[0,0;4,0.8;open_menu;Open main menu]",
 		"container_end[]",
 
