@@ -308,6 +308,7 @@ local function get_formspec(dlgdata)
 		x = W,
 		y = H - 1.425 - 0.25 - 0.8
 	})
+	core.log(dump(cell_spacing, columns, cell_w, cell_h))
 	local img_w = cell_h * 3 / 2
 
 	-- Use as much of the available space as possible (so no padding on the

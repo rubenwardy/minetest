@@ -13,6 +13,7 @@ function get_demos()
 			title = "A.E.S",
 			author = "Zughy and Friends",
 			description = "Arcade Emulation System, a Luanti server",
+			image = nil,
 		}
 	}
 	for i = 1, #pkgmgr.games do
@@ -24,6 +25,7 @@ function get_demos()
 				title = game.title or game.id,
 				author = game.author,
 				description = game.description,
+				image = game.path .. DIR_DELIM .. "screenshot.png",
 			})
 		end
 	end

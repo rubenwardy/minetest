@@ -8,6 +8,44 @@ dofile(path .. DIR_DELIM .. "get_demos.lua")
 local Kiosk = {}
 Kiosk.__index = Kiosk
 
+local function render_tile(demo, x, y, cell_w, cell_h)
+	local text = core.colorize(mt_color_green, demo.title) ..
+		core.colorize("#BFBFBF", " by " .. demo.author) .. "\n" ..
+		demo.description
+	local img_w = cell_h * 3 / 2
+
+	-- Use as much of the available space as possible (so no padding on the
+	-- right/bottom), but don't quite allow the text to touch the border.
+	local text_w = cell_w - img_w - 0.25 - 0.025
+	local text_h = cell_h - 0.25 - 0.025
+
+	local blank = core.formspec_escape(defaulttexturedir .. "blank.png")
+	return {
+		"container[", x, ",", y, "]",
+
+		"box[0,0;", cell_w, ",", cell_h, ";#ffffff11]",
+
+		-- image,
+		"image[0,0;", img_w, ",", cell_h, ";",
+		 	core.formspec_escape(demo.image or blank), "]",
+
+		"label[", img_w + 0.25, ",0.25;", text_w, ",", text_h, ";",
+			core.formspec_escape(text), "]",
+
+		-- Add a tooltip in case the label overflows and the short description is cut off.
+		"tooltip[", img_w + 0.25, ",0.25;", text_w, ",", text_h, ";",
+			-- Text in tooltips doesn't wrap automatically, so we do it manually to
+			-- avoid everything being one long line.
+			core.formspec_escape(core.wrap_text(demo.description, 80)), "]",
+
+		"style[view_", demo.title, ";border=false]",
+		"style[view_", demo.title, ":hovered;bgimg=", core.formspec_escape(defaulttexturedir .. "button_hover_semitrans.png"), "]",
+		"style[view_", demo.title, ":pressed;bgimg=", core.formspec_escape(defaulttexturedir .. "button_press_semitrans.png"), "]",
+		"button[0,0;", cell_w, ",", cell_h, ";view_", demo.title, ";]",
+		"container_end[]",
+	}
+end
+
 function Kiosk:get_formspec()
 	if self.hidden or (self.parent ~= nil and self.parent.hidden) then
 		return ""
@@ -31,14 +69,16 @@ function Kiosk:get_formspec()
 		"label[0,0;", size.x, ",1;Luanti demo mode]",
 	}
 
+	local columns = 2
+	local cell_spacing = 0.25
+	local cell_w = (size.x - window_padding.x * 2 + cell_spacing) / (columns) - cell_spacing
+	local cell_h = 2
 	local y = 1
 	for i = 1, #demos do
 		local demo = demos[i]
-		table.insert_all(fs, {
-			"container[0,", y, "]",
-			"label[0,0;3,1;", core.formspec_escape(demo.title), "]",
-			"container_end[]",
-		})
+		local x = (cell_w + cell_spacing) * ((i - 1) % columns)
+		local y = (cell_h + cell_spacing) * math.floor((i - 1) / columns) + 1
+		table.insert_all(fs, render_tile(demo, x, y, cell_w, cell_h))
 		y = y + 1
 	end
 
