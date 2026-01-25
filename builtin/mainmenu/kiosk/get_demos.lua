@@ -15,7 +15,7 @@ local aes = {
 	start = join_server,
 }
 
-local overrides = {
+local games_info = {
 	asuna = {
 		description = "A vibrant world of beautiful biomes. Explore, discover, create.",
 	},
@@ -32,9 +32,9 @@ local overrides = {
 		image = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM .. "extra_ordinance.png",
 	},
 
-	klots = {},
-
-	nodecore = {},
+	slide_space = {
+		image = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM .. "slidespace.png",
+	},
 
 	prang = {
 		description = "An unofficial port of PRANG!, a 2D arcade-style game."
@@ -72,7 +72,7 @@ function get_demos()
 	}
 	for i = 1, #pkgmgr.games do
 		local game = pkgmgr.games[i]
-		if game.id ~= "devtest" and game.id ~= "minetest" then
+		if games_info[game.id] then
 			local demo = {
 				type = "game",
 				game = game,
@@ -82,7 +82,7 @@ function get_demos()
 				image = game.path .. DIR_DELIM .. "screenshot.png",
 				start = start_world,
 			}
-			for key, value in pairs(overrides[game.id] or {}) do
+			for key, value in pairs(games_info[game.id]) do
 				demo[key] = value
 			end
 			if demo.description:sub(-1) == "." then
