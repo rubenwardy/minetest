@@ -37,10 +37,10 @@ local aes = {
 	},
 	title = "A.E.S",
 	author = "Zughy and Friends",
-	description = "Arcade Emulation System, a minigames multiplayer server.",
+	description = "Arcade Emulation System, a minigames multiplayer server.\nDive into lots of minigames with friends: Murder, Skywars, Block League, Fantasy Brawl, Arcade and more!",
 	image = kiosk_path .. "aes.png",
 	start = join_server,
-	tags = { "Minigames", "Online", "Arcade" },
+	tags = { "Minigames", "Online", "Arcade", "PvP" },
 }
 
 local games_info = {
