@@ -12,12 +12,13 @@ local function render_tile(demo, x, y, cell_w, cell_h)
 	local text = core.colorize(mt_color_green, demo.title) ..
 		core.colorize("#BFBFBF", " by " .. demo.author) .. "\n" ..
 		demo.description
+	local tags = core.colorize("#999", table.concat(demo.tags, ", "))
 	local img_w = cell_h * 3 / 2
 
 	-- Use as much of the available space as possible (so no padding on the
 	-- right/bottom), but don't quite allow the text to touch the border.
 	local text_w = cell_w - img_w - 0.25 - 0.025
-	local text_h = cell_h - 0.25 - 0.025
+	local text_h = cell_h - 0.25 - 0.025 - 0.5
 
 	local blank = core.formspec_escape(defaulttexturedir .. "blank.png")
 	return {
@@ -31,6 +32,9 @@ local function render_tile(demo, x, y, cell_w, cell_h)
 
 		"label[", img_w + 0.25, ",0.25;", text_w, ",", text_h, ";",
 			core.formspec_escape(text), "]",
+
+		"label[", img_w + 0.25, ",", cell_h - 0.5 , ";", text_w, ",0.5;",
+			core.formspec_escape(tags), "]",
 
 		-- Add a tooltip in case the label overflows and the short description is cut off.
 		"tooltip[", img_w + 0.25, ",0.25;", text_w, ",", text_h, ";",
@@ -67,8 +71,10 @@ function Kiosk:get_formspec()
 		"container[", window_padding.x, ",", window_padding.y, "]",
 
 		"style_type[label;font_size=32]",
-		"label[0,0;", size.x, ",1;Luanti demo mode]",
+		"label[0,0.1;", size.x, ",1;Luanti demo mode]",
 		"style_type[label;font_size=]",
+
+		"button[", size.x - window_padding.x * 2 - 4, ",0;4,0.8;open_menu;Open main menu]",
 	}
 
 	local columns = math.max(1, math.floor(size.x / 8))
@@ -85,10 +91,6 @@ function Kiosk:get_formspec()
 	end
 
 	table.insert_all(fs, {
-		"container[", (size.x - window_padding.x*2 - 4) / 2,  ", ", size.y - window_padding.y * 2 - 0.8, "]",
-		"button[0,0;4,0.8;open_menu;Open main menu]",
-		"container_end[]",
-
 		"container_end[]",
 	})
 

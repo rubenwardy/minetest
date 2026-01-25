@@ -13,31 +13,39 @@ local aes = {
 	description = "Arcade Emulation System, a minigames multiplayer server",
 	image = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM .. "aes.png",
 	start = join_server,
+	tags = { "Minigames", "Online", "Arcade" },
 }
 
 local games_info = {
 	asuna = {
 		description = "A vibrant world of beautiful biomes. Explore, discover, create.",
+		tags = { "Survival", "Aesthetic", "Sandbox" },
 	},
 
 	backroomtest = {
 		description = "A game about exploring uncanny, vaguely unsettling, liminal spaces. The goal is to explore, be lost, wander. Can you find all the levels?",
 		image = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM .. "backrooms.png",
+		tags = { "Adventure", "Mystery", "Aesthetic"},
 	},
 
-	exile = {},
+	exile = {
+		tags = { "Survival", "Sandbox", },
+	},
 
 	extra_ordinance = {
 		description = "You have several weapons to choose from. You can dig through the earth. So can they.",
 		image = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM .. "extra_ordinance.png",
+		tags = { "Action", "Shooter", },
 	},
 
 	slide_space = {
 		image = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM .. "slidespace.png",
+		tags = { "Arcade", "2D", },
 	},
 
 	prang = {
-		description = "An unofficial port of PRANG!, a 2D arcade-style game."
+		description = "An unofficial port of PRANG!, a 2D arcade-style game.",
+		tags = { "Puzzle", "Aesthetic", },
 	},
 }
 
