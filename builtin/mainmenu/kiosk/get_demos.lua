@@ -2,6 +2,8 @@
 -- Copyright (C) 2026 rubenwardy
 -- SPDX-License-Identifier: LGPL-2.1-or-later
 
+local kiosk_path = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM
+
 local aes = {
 	type = "server",
 	server = {
@@ -11,7 +13,7 @@ local aes = {
 	title = "A.E.S",
 	author = "Zughy and Friends",
 	description = "Arcade Emulation System, a minigames multiplayer server",
-	image = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM .. "aes.png",
+	image = kiosk_path .. "aes.png",
 	start = join_server,
 	tags = { "Minigames", "Online", "Arcade" },
 }
@@ -24,7 +26,7 @@ local games_info = {
 
 	backroomtest = {
 		description = "A game about exploring uncanny, vaguely unsettling, liminal spaces. The goal is to explore, be lost, wander. Can you find all the levels?",
-		image = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM .. "backrooms.png",
+		image = kiosk_path .. "backrooms.png",
 		tags = { "Adventure", "Mystery", "Aesthetic"},
 	},
 
@@ -34,12 +36,12 @@ local games_info = {
 
 	extra_ordinance = {
 		description = "You have several weapons to choose from. You can dig through the earth. So can they.",
-		image = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM .. "extra_ordinance.png",
+		image = kiosk_path .. "extra_ordinance.png",
 		tags = { "Action", "Shooter", },
 	},
 
 	slide_space = {
-		image = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM .. "slidespace.png",
+		image = kiosk_path .. "slidespace.png",
 		tags = { "Arcade", "2D", },
 	},
 

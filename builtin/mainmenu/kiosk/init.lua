@@ -74,7 +74,11 @@ function Kiosk:get_formspec()
 		"label[0,0.1;", size.x, ",1;Luanti demo mode]",
 		"style_type[label;font_size=]",
 
-		"button[", size.x - window_padding.x * 2 - 4, ",0;4,0.8;open_menu;Open main menu]",
+		-- "button[", size.x - window_padding.x * 2 - 4, ",0;4,0.8;open_menu;Open main menu]",
+		"style[open_menu;border=false]",
+		"tooltip[open_menu;Open main menu]",
+		"image_button[", size.x - window_padding.x * 2 - 0.8, ",0;0.8,0.8;",
+			core.formspec_escape(path .. DIR_DELIM .. "home.png"), ";open_menu;]",
 	}
 
 	local columns = math.max(1, math.floor(size.x / 8))
