@@ -15,9 +15,7 @@ local function render_tile(demo, x, y, cell_w, cell_h)
 	local tags = core.colorize("#999", table.concat(demo.tags, ", "))
 	local img_w = cell_h * 3 / 2
 
-	-- Use as much of the available space as possible (so no padding on the
-	-- right/bottom), but don't quite allow the text to touch the border.
-	local text_w = cell_w - img_w - 0.25 - 0.025
+	local text_w = cell_w - img_w - 0.25 - 0.25
 	local text_h = cell_h - 0.25 - 0.025 - 0.5
 
 	local blank = core.formspec_escape(defaulttexturedir .. "blank.png")

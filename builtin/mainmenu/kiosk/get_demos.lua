@@ -3,61 +3,14 @@
 -- SPDX-License-Identifier: LGPL-2.1-or-later
 
 local kiosk_path = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM
-
-local aes = {
-	type = "server",
-	server = {
-		address = "minetest.aes.land",
-		post = 30010,
-	},
-	title = "A.E.S",
-	author = "Zughy and Friends",
-	description = "Arcade Emulation System, a minigames multiplayer server",
-	image = kiosk_path .. "aes.png",
-	start = join_server,
-	tags = { "Minigames", "Online", "Arcade" },
-}
-
-local games_info = {
-	asuna = {
-		description = "A vibrant world of beautiful biomes. Explore, discover, create.",
-		tags = { "Survival", "Aesthetic", "Sandbox" },
-	},
-
-	backroomtest = {
-		description = "A game about exploring uncanny, vaguely unsettling, liminal spaces. The goal is to explore, be lost, wander. Can you find all the levels?",
-		image = kiosk_path .. "backrooms.png",
-		tags = { "Adventure", "Mystery", "Aesthetic"},
-	},
-
-	exile = {
-		tags = { "Survival", "Sandbox", },
-	},
-
-	extra_ordinance = {
-		description = "You have several weapons to choose from. You can dig through the earth. So can they.",
-		image = kiosk_path .. "extra_ordinance.png",
-		tags = { "Action", "Shooter", },
-	},
-
-	slide_space = {
-		image = kiosk_path .. "slidespace.png",
-		tags = { "Arcade", "2D", },
-	},
-
-	prang = {
-		description = "An unofficial port of PRANG!, a 2D arcade-style game.",
-		tags = { "Puzzle", "Aesthetic", },
-	},
-}
-
-assert(core.settings:get("fosdem_password"))
+local fosdem_password = assert(core.settings:get("fosdem_password"))
+local username = assert(core.settings:get("name"))
 
 local function join_server(self)
 	gamedata.selected_world = 0
 	gamedata.address = self.server.address
 	gamedata.port = self.server.port
-	gamedata.playername = "fosdem"
+	gamedata.playername = username
 	gamedata.password = fosdem_password
 	gamedata.servername = self.name
 	gamedata.serverdescription = self.description
@@ -75,6 +28,54 @@ local function start_world(self)
 	gamedata.singleplayer = true
 	core.start()
 end
+
+local aes = {
+	type = "server",
+	server = {
+		address = "minetest.aes.land",
+		post = 30010,
+	},
+	title = "A.E.S",
+	author = "Zughy and Friends",
+	description = "Arcade Emulation System, a minigames multiplayer server.",
+	image = kiosk_path .. "aes.png",
+	start = join_server,
+	tags = { "Minigames", "Online", "Arcade" },
+}
+
+local games_info = {
+	asuna = {
+		description = "A vibrant world of beautiful biomes. Explore, discover, create.",
+		image = kiosk_path .. "asuna.png",
+		tags = { "Survival", "Sandbox", "Atmospheric", },
+	},
+
+	backroomtest = {
+		description = "A game about exploring uncanny, vaguely unsettling, liminal spaces. The goal is to explore, be lost, wander. Can you find all the levels?",
+		image = kiosk_path .. "backrooms.png",
+		tags = { "Adventure", "Mystery", "Atmospheric"},
+	},
+
+	exile = {
+		tags = { "Survival", "Sandbox", },
+	},
+
+	extra_ordinance = {
+		description = "You have several weapons to choose from. You can dig through the earth. So can they.",
+		image = kiosk_path .. "extra_ordinance.png",
+		tags = { "Action", "Shooter", },
+	},
+
+	slide_space = {
+		image = kiosk_path .. "slidespace.png",
+		tags = { "Puzzle", "Atmospheric", },
+	},
+
+	prang = {
+		description = "An unofficial port of PRANG!, a 2D arcade-style game.",
+		tags = { "Arcade", "2D", },
+	},
+}
 
 function get_demos()
 	local retval = {
@@ -94,9 +95,6 @@ function get_demos()
 			}
 			for key, value in pairs(games_info[game.id]) do
 				demo[key] = value
-			end
-			if demo.description:sub(-1) == "." then
-				demo.description = demo.description:sub(1, #demo.description - 1)
 			end
 			table.insert(retval, demo)
 		end
