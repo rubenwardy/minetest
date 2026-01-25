@@ -2,6 +2,19 @@
 -- Copyright (C) 2026 rubenwardy
 -- SPDX-License-Identifier: LGPL-2.1-or-later
 
+local aes = {
+	type = "server",
+	server = {
+		address = "minetest.aes.land",
+		post = 30010,
+	},
+	title = "A.E.S",
+	author = "Zughy and Friends",
+	description = "Arcade Emulation System, a minigames multiplayer server",
+	image = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM .. "aes.png",
+	start = join_server,
+}
+
 local overrides = {
 	asuna = {
 		description = "A vibrant world of beautiful biomes. Explore, discover, create.",
@@ -28,12 +41,14 @@ local overrides = {
 	},
 }
 
+assert(core.settings:get("fosdem_password"))
+
 local function join_server(self)
 	gamedata.selected_world = 0
 	gamedata.address = self.server.address
 	gamedata.port = self.server.port
-	gamedata.playername = ("fosdem%05d"):format(math.random() * 10000)
-	gamedata.password = "fosdem"
+	gamedata.playername = "fosdem"
+	gamedata.password = fosdem_password
 	gamedata.servername = self.name
 	gamedata.serverdescription = self.description
 	core.start()
@@ -53,18 +68,7 @@ end
 
 function get_demos()
 	local retval = {
-		{
-			type = "server",
-			server = {
-				address = "minetest.aes.land",
-				post = 30010,
-			},
-			title = "A.E.S",
-			author = "Zughy and Friends",
-			description = "Arcade Emulation System, a Luanti server",
-			image = core.get_mainmenu_path() .. DIR_DELIM .. "kiosk" .. DIR_DELIM .. "aes.png",
-			start = join_server,
-		}
+		aes,
 	}
 	for i = 1, #pkgmgr.games do
 		local game = pkgmgr.games[i]

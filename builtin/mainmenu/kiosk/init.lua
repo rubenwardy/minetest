@@ -71,7 +71,7 @@ function Kiosk:get_formspec()
 		"style_type[label;font_size=]",
 	}
 
-	local columns = 2
+	local columns = math.max(1, math.floor(size.x / 8))
 	local cell_spacing = 0.25
 	local cell_w = (size.x - window_padding.x * 2 + cell_spacing) / (columns) - cell_spacing
 	local cell_h = 2
