@@ -69,7 +69,7 @@ function Kiosk:get_formspec()
 		"container[", window_padding.x, ",", window_padding.y, "]",
 
 		"style_type[label;font_size=32]",
-		"label[0,0.1;", size.x, ",1;Luanti demo mode]",
+		"label[0,0.1;", size.x, ",1;Luanti showcase]",
 		"style_type[label;font_size=]",
 
 		-- "button[", size.x - window_padding.x * 2 - 4, ",0;4,0.8;open_menu;Open main menu]",
