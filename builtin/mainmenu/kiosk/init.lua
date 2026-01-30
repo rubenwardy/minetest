@@ -68,8 +68,10 @@ function Kiosk:get_formspec()
 
 		"container[", window_padding.x, ",", window_padding.y, "]",
 
+		"image[0,-0.05;0.8,0.8;", core.formspec_escape(path .. DIR_DELIM .. "luanti.png"), "]",
+
 		"style_type[label;font_size=32]",
-		"label[0,0.1;", size.x, ",1;Luanti showcase]",
+		"label[1.05,0.1;", size.x, ",1;Luanti showcase]",
 		"style_type[label;font_size=]",
 
 		-- "button[", size.x - window_padding.x * 2 - 4, ",0;4,0.8;open_menu;Open main menu]",
