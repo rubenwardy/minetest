@@ -18,10 +18,20 @@ local function join_server(self)
 end
 
 local function start_world(self)
-	local timestamp = os.date("%Y-%m-%dT%H-%M-%S")
-	local worldname = "world_" .. timestamp .. "_" .. self.game.id
-	core.create_world(worldname, self.game.id, self.world_settings or {})
-	menudata.worldlist:refresh()
+	local worldname
+	if self.persisted then
+		worldname = "world_" .. self.game.id
+		idx = menudata.worldlist:raw_index_by_uid(worldname)
+		if idx == 0 then
+			core.create_world(worldname, self.game.id, self.world_settings or {})
+			menudata.worldlist:refresh()
+		end
+	else
+		local timestamp = os.date("%Y-%m-%dT%H-%M-%S")
+		local worldname = "world_" .. timestamp .. "_" .. self.game.id
+		core.create_world(worldname, self.game.id, self.world_settings or {})
+		menudata.worldlist:refresh()
+	end
 
 	local idx = menudata.worldlist:raw_index_by_uid(worldname)
 	gamedata.selected_world = idx
@@ -48,6 +58,7 @@ local games_info = {
 		description = "A vibrant world of beautiful biomes. Explore, discover, create.",
 		image = kiosk_path .. "asuna.png",
 		tags = { "Survival", "Sandbox", "Atmospheric", },
+		persisted = true,
 		world_settings = {
 			mg_name = "v7",
 		},
@@ -57,6 +68,7 @@ local games_info = {
 		description = "A game about exploring uncanny, vaguely unsettling, liminal spaces. The goal is to explore, be lost, wander. Can you find all the levels?",
 		image = kiosk_path .. "backrooms.png",
 		tags = { "Adventure", "Mystery", "Atmospheric"},
+		persisted = true,
 		world_settings = {
 			mg_name = "v7",
 		},
