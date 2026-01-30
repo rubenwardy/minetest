@@ -20,7 +20,7 @@ end
 local function start_world(self)
 	local timestamp = os.date("%Y-%m-%dT%H-%M-%S")
 	local worldname = "world_" .. timestamp .. "_" .. self.game.id
-	core.create_world(worldname, self.game.id, {})
+	core.create_world(worldname, self.game.id, self.world_settings or {})
 	menudata.worldlist:refresh()
 
 	local idx = menudata.worldlist:raw_index_by_uid(worldname)
@@ -48,32 +48,43 @@ local games_info = {
 		description = "A vibrant world of beautiful biomes. Explore, discover, create.",
 		image = kiosk_path .. "asuna.png",
 		tags = { "Survival", "Sandbox", "Atmospheric", },
+		world_settings = {
+			mg_name = "v7",
+		},
 	},
 
 	backroomtest = {
 		description = "A game about exploring uncanny, vaguely unsettling, liminal spaces. The goal is to explore, be lost, wander. Can you find all the levels?",
 		image = kiosk_path .. "backrooms.png",
 		tags = { "Adventure", "Mystery", "Atmospheric"},
-	},
-
-	exile = {
-		tags = { "Survival", "Sandbox", },
+		world_settings = {
+			mg_name = "v7",
+		},
 	},
 
 	extra_ordinance = {
 		description = "You have several weapons to choose from. You can dig through the earth. So can they.",
 		image = kiosk_path .. "extra_ordinance.png",
 		tags = { "Action", "Shooter", },
+		world_settings = {
+			mg_name = "singlenode",
+		},
 	},
 
 	slide_space = {
 		image = kiosk_path .. "slidespace.png",
 		tags = { "Puzzle", "Atmospheric", },
+		world_settings = {
+			mg_name = "singlenode",
+		},
 	},
 
 	prang = {
 		description = "An unofficial port of PRANG!, a 2D arcade-style game.",
 		tags = { "Arcade", "2D", },
+		world_settings = {
+			mg_name = "singlenode",
+		},
 	},
 }
 
