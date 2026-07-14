@@ -28,7 +28,7 @@ local function start_world(self)
 		end
 	else
 		local timestamp = os.date("%Y-%m-%dT%H-%M-%S")
-		local worldname = "world_" .. timestamp .. "_" .. self.game.id
+		worldname = "world_" .. timestamp .. "_" .. self.game.id
 		core.create_world(worldname, self.game.id, self.world_settings or {})
 		menudata.worldlist:refresh()
 	end
